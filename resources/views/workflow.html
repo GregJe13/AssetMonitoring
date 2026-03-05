@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Workflow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Arrow Step Styles */
+        .arrow-steps .step {
+            font-size: 14px;
+            text-align: center;
+            color: #666;
+            cursor: default;
+            margin: 0 3px;
+            padding: 10px 10px 10px 30px;
+            min-width: 120px;
+            float: left;
+            position: relative;
+            background-color: #f3f4f6;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            transition: all 0.3s ease;
+            clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%);
+        }
+
+        .arrow-steps .step:first-child {
+            padding-left: 20px;
+            clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%);
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Last step shouldn't have the arrow cut-out at the end if we wanted a flat end, 
+            but standard marketplace usually keeps arrow or makes it flat. 
+            Let's keep arrow for consistency or flat for end. */
+        .arrow-steps .step:last-child {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 10% 50%);
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .arrow-steps .step.current {
+            color: #fff;
+            background-color: #0ea5e9;
+            /* Sky 500 */
+        }
+
+        .arrow-steps .step.completed {
+            color: #fff;
+            background-color: #10b981;
+            /* Emerald 500 */
+        }
+
+        .arrow-steps .step.completed:hover {
+            background-color: #059669;
+        }
+
+        .arrow-steps .step:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6 pb-24 text-gray-800 font-sans">
+
+    <!-- Header -->
+    <div class="text-center mb-16 animate-slide-up">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Contract Life Cycle</h1>
+        <p class="text-gray-500">Current Progress Tracking</p>
+    </div>
+
+    <!-- Workflow Container -->
+    <div class="w-full max-w-6xl relative flex flex-col items-center justify-start animate-fade-in"
+        style="animation-delay: 0.2s;">
+
+        <!-- Arrow Steps Container -->
+        <div class="arrow-steps clearfix flex w-full justify-center mb-12" id="steps-container">
+            <!-- Dynamic Steps Injected Here -->
+        </div>
+
+        <!-- Detail Card (Optional context for current step) -->
+        <div class="w-full max-w-lg bg-white border border-gray-200 rounded-2xl p-8 shadow-xl text-center">
+            <div id="step-icon"
+                class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-file-contract"></i> 1
+            </div>
+            <h2 id="step-title" class="text-2xl font-bold text-gray-800 mb-2">Surat Konfirmasi Akhir Kontrak</h2>
+            <p id="step-desc" class="text-gray-500 mb-6">Notification has been sent to the tenant regarding the contract
+                expiration.</p>
+
+            <div id="decision-controls" class="hidden flex gap-4 justify-center mt-4">
+                <button onclick="chooseBranch('A')"
+                    class="px-6 py-2 bg-red-50 text-red-600 rounded-lg border border-red-200 hover:bg-red-100 transition font-medium">Akhir
+                    Kontrak</button>
+                <button onclick="chooseBranch('B')"
+                    class="px-6 py-2 bg-green-50 text-green-600 rounded-lg border border-green-200 hover:bg-green-100 transition font-medium">Perpanjangan</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls for Demo -->
+    <div class="fixed bottom-8 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex gap-4 z-50 animate-fade-in"
+        style="animation-delay: 0.5s;">
+        <span class="text-sm font-medium text-gray-500 self-center mr-2">Simulate:</span>
+        <button onclick="resetInternal()"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm transition">Reset</button>
+        <button onclick="nextStep()"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-lg text-sm transition shadow-lg shadow-indigo-200">Next
+            Step</button>
+    </div>
+
+    <script>
+        // Definition of all possible steps
+        const STEPS = {
+            1: { title: "Surat Konfirmasi", desc: "Notification sent to tenant regarding contract expiration." },
+            2: { title: "Menunggu Jawaban", desc: "Waiting for tenant's response." },
+            // Branch A
+            '3A': { title: "Jawaban: Akhir", desc: "Tenant decided to end the contract." },
+            '4A': { title: "Closed Contract", desc: "Contract has been officially closed." },
+            // Branch B
+            '3B': { title: "Jawaban: Perpanjangan", desc: "Tenant requested contract extension." },
+            '4B': { title: "Draft BAK", desc: "Drafting Berita Acara Kesepakatan." },
+            '5B': { title: "Sign BAK", desc: "Signing the agreement." },
+            '6B': { title: "Perpanjangan Kontrak", desc: "Contract extended successfully." }
+        };
+
+        // Initial Sequence
+        let currentSequence = [
+            { id: 1, title: "Surat Konfirmasi" },
+            { id: 2, title: "Menunggu Jawaban" },
+            { id: 'PENDING', title: "..." } // Placeholder for future steps until decision
+        ];
+
+        let currentStepIndex = 0; // 0-based index in currentSequence
+        let selectedBranch = null;
+
+        function renderSteps() {
+            const container = document.getElementById('steps-container');
+            container.innerHTML = '';
+
+            currentSequence.forEach((step, index) => {
+                const stepEl = document.createElement('div');
+                stepEl.className = 'step';
+                stepEl.innerHTML = `<span class="font-medium">${step.title}</span>`;
+
+                // Styling based on state
+                if (index < currentStepIndex) {
+                    stepEl.classList.add('completed');
+                } else if (index === currentStepIndex) {
+                    stepEl.classList.add('current');
+                }
+
+                container.appendChild(stepEl);
+            });
+
+            updateDetailCard();
+        }
+
+        function updateDetailCard() {
+            const stepId = currentSequence[currentStepIndex].id;
+
+            if (stepId === 'PENDING') {
+                document.getElementById('step-title').textContent = "Pending Decision";
+                document.getElementById('step-desc').textContent = "Steps will be revealed after decision.";
+                document.getElementById('step-icon').innerHTML = '?';
+                document.getElementById('decision-controls').classList.add('hidden');
+                return;
+            }
+
+            const data = STEPS[stepId];
+            if (data) {
+                document.getElementById('step-title').textContent = data.title;
+                document.getElementById('step-desc').textContent = data.desc;
+                document.getElementById('step-icon').innerHTML = currentStepIndex + 1;
+            }
+
+            // Show decision controls only if at step 2 and no branch selected yet
+            if (stepId === 2 && !selectedBranch) {
+                document.getElementById('decision-controls').classList.remove('hidden');
+            } else {
+                document.getElementById('decision-controls').classList.add('hidden');
+            }
+        }
+
+        function chooseBranch(branch) {
+            selectedBranch = branch;
+            if (branch === 'A') {
+                // Update sequence for Akhir
+                currentSequence = [
+                    { id: 1, title: "Surat Konfirmasi" },
+                    { id: 2, title: "Menunggu Jawaban" },
+                    { id: '3A', title: "Jawaban: Akhir" },
+                    { id: '4A', title: "Closed Contract" }
+                ];
+            } else {
+                // Update sequence for Perpanjangan
+                currentSequence = [
+                    { id: 1, title: "Surat Konfirmasi" },
+                    { id: 2, title: "Menunggu Jawaban" },
+                    { id: '3B', title: "Jawaban: Perpanjangan" },
+                    { id: '4B', title: "Draft BAK" },
+                    { id: '5B', title: "Sign BAK" },
+                    { id: '6B', title: "Perpanjangan Kontrak" }
+                ];
+            }
+
+            // Auto advance to next step (Response received)
+            currentStepIndex++;
+            renderSteps();
+        }
+
+        function nextStep() {
+            if (currentSequence[currentStepIndex].id === 2 && !selectedBranch) {
+                alert("Please select a decision (Akhir or Perpanjangan) to proceed.");
+                return;
+            }
+
+            if (currentStepIndex < currentSequence.length - 1) {
+                currentStepIndex++;
+                renderSteps();
+            }
+        }
+
+        function resetInternal() {
+            currentStepIndex = 0;
+            selectedBranch = null;
+            currentSequence = [
+                { id: 1, title: "Surat Konfirmasi" },
+                { id: 2, title: "Menunggu Jawaban" },
+                { id: 'PENDING', title: "..." }
+            ];
+            renderSteps();
+        }
+
+        // Initialize
+        renderSteps();
+
+    </script>
+</body>
+
+</html>
