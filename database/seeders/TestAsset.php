@@ -57,7 +57,7 @@ class TestAsset extends Seeder
             ['id_gedung' => '77-GKL-W', 'name' => 'GKL Ged.W', 'area_sqm' => 275.80],
             ['id_gedung' => '77-GKL-X', 'name' => 'GKL Ged.X', 'area_sqm' => 234],
             ['id_gedung' => '77-GKL-Y', 'name' => 'GKL Ged.Y', 'area_sqm' => 764],
-            ['id_gedung' => '77-GKL-AA', 'name' => 'GKL Ged.AA', 'area_sqm' => 89.24],
+            ['id_gedung' => '77-GKL-AA', 'name' => 'GKL Ged.AA', 'area_sqm' => 103],
             ['id_gedung' => '77-GKL-AB', 'name' => 'GKL Ged.AB', 'area_sqm' => 323],
             ['id_gedung' => '77-GKL-AC', 'name' => 'GKL Ged.AC', 'area_sqm' => 602.25],
             ['id_gedung' => '77-GKL-AD', 'name' => 'GKL Ged.AD', 'area_sqm' => 1800],
@@ -98,23 +98,23 @@ class TestAsset extends Seeder
 
         $this->command->info('Created ' . Asset::count() . ' assets.');
 
-        $tenant = [
-            ['name' => 'Kepolisian Negara RI Daerah Jawa Barat', 'id_tenant' => 40232, 'npwp' => '0001416247422000'],
-            ['name' => 'PT CITRA INDUSTRI KERETA API', 'id_tenant' => 40175, 'npwp' => '0803373539424000'],
-            ['name' => 'PT Navitas Educational Service', 'id_tenant' => 40238, 'npwp' => '0046049904047000'],
-            ['name' => 'YAYASAN PENDIDIKAN KEBANGSAAN RI', 'id_tenant' => 40246, 'npwp' => '0016054215064000'],
-            ['name' => 'PT Inti Pindad Mitra Sejati', 'id_tenant' => 40105, 'npwp' => '00023329261441000'],
-            ['name' => 'PT PUTRA TELEKOMUNIKASI INDONE', 'id_tenant' => 40237, 'npwp' => '00430307686445000'],
-            ['name' => 'PT. MITRA BHAKTI INTI PERDANA', 'id_tenant' => 40050, 'npwp' => '0017459116441000'],
-            ['name' => 'Perorangan - GAFRELLY', 'id_tenant' => 40255],
-            ['name' => 'PT. MITRA GRAHA INTI UTAMA (MGIU)', 'id_tenant' => 40051, 'npwp' => '0018228528424000'],
-            ['name' => 'PT. INTI BUMI PERKASA', 'id_tenant' => 40046, 'npwp' => '0018228064441000'],
-            ['name' => 'PT. INTI KONTEN INDONESIA', 'id_tenant' => 40047, 'npwp' => '0031195344242000'],
-            ['name' => 'PT DAYAMITRA TELEKOMUNIKASI Tb', 'id_tenant' => 40215, 'npwp' => '0010712446093000'],
-        ];
+        // $tenant = [
+        //     ['name' => 'Kepolisian Negara RI Daerah Jawa Barat', 'id_tenant' => 40232, 'npwp' => '0001416247422000'],
+        //     ['name' => 'PT CITRA INDUSTRI KERETA API', 'id_tenant' => 40175, 'npwp' => '0803373539424000'],
+        //     ['name' => 'PT Navitas Educational Service', 'id_tenant' => 40238, 'npwp' => '0046049904047000'],
+        //     ['name' => 'YAYASAN PENDIDIKAN KEBANGSAAN RI', 'id_tenant' => 40246, 'npwp' => '0016054215064000'],
+        //     ['name' => 'PT Inti Pindad Mitra Sejati', 'id_tenant' => 40105, 'npwp' => '00023329261441000'],
+        //     ['name' => 'PT PUTRA TELEKOMUNIKASI INDONE', 'id_tenant' => 40237, 'npwp' => '00430307686445000'],
+        //     ['name' => 'PT. MITRA BHAKTI INTI PERDANA', 'id_tenant' => 40050, 'npwp' => '0017459116441000'],
+        //     ['name' => 'Perorangan - GAFRELLY', 'id_tenant' => 40255],
+        //     ['name' => 'PT. MITRA GRAHA INTI UTAMA (MGIU)', 'id_tenant' => 40051, 'npwp' => '0018228528424000'],
+        //     ['name' => 'PT. INTI BUMI PERKASA', 'id_tenant' => 40046, 'npwp' => '0018228064441000'],
+        //     ['name' => 'PT. INTI KONTEN INDONESIA', 'id_tenant' => 40047, 'npwp' => '0031195344242000'],
+        //     ['name' => 'PT DAYAMITRA TELEKOMUNIKASI Tb', 'id_tenant' => 40215, 'npwp' => '0010712446093000'],
+        // ];
 
-        foreach ($tenant as $tenantData) {
-            Tenant::create($tenantData);
-        }
+        // foreach ($tenant as $tenantData) {
+        //     Tenant::create($tenantData);
+        // }
     }
 }

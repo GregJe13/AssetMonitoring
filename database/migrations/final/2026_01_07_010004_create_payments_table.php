@@ -41,8 +41,9 @@ return new class extends Migration
             $table->index('due_date');
             $table->index('payment_status');
             
-            // Prevent duplicate: satu kontrak/amendment tidak bisa punya 2 periode yang sama
-            $table->unique(['contract_id', 'amendment_id', 'period_number']);
+            // Prevent duplicate: satu kontrak tidak bisa punya 2 periode yang sama
+            // Note: constraint ini akan diupdate oleh 2026_03_04_070000 setelah amendment_id ditambahkan
+            $table->unique(['contract_id', 'period_number']);
         });
     }
 
