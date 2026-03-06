@@ -1,59 +1,240 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📊 Contract Monitoring System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive **Contract Monitoring System** built with Laravel 12 for managing tenants, assets, contracts, payments, invoices, amendments, and contract workflows. The system features role-based access control, a dynamic dashboard, and a visual workflow tracking interface.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer       | Technology                                    |
+|-------------|-----------------------------------------------|
+| Backend     | PHP 8.2.4, Laravel 12, Laravel Sanctum         |
+| Frontend    | Blade Templates, TailwindCSS 4, Alpine.js     |
+| Charts      | ApexCharts                                     |
+| Alerts      | SweetAlert2                                    |
+| Build Tool  | Vite 7                                         |
+| Database    | MySQL / MariaDB                                |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Tenant Management** — Create, view, and manage tenant information
+- **Asset Management** — Track and organize company assets
+- **Contract Management** — Full contract lifecycle with start/end dates and associated assets
+- **Contract Amendments** — Support for contract modifications and renewals
+- **Payment Tracking** — Record and monitor payments linked to contracts
+- **Invoice Generation** — Create and manage invoices with asset line items
+- **Workflow System** — Visual step-by-step contract workflow with evidence uploads
+- **Renewal Workflow** — Automated renewal process with choice to create new contract or amendment
+- **Dashboard** — Dynamic overview with charts, expiring contracts alerts, and key metrics
+- **Role-Based Access** — Multi-role authentication powered by Laravel Sanctum
+- **Forgot Password** — Email-based password recovery flow
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📋 Prerequisites
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **PHP** >= 8.2.4
+- **Composer** >= 2.x
+- **Node.js** >= 18.x & **npm**
+- **MySQL** or **MariaDB**
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## ⚙️ Installation
 
-## Contributing
+### 1. Clone the repository
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+git clone <repository-url>
+cd monitoring
+```
 
-## Code of Conduct
+### 2. Install PHP dependencies
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer install
+```
 
-## Security Vulnerabilities
+### 3. Install Node.js dependencies
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+npm install
+```
 
-## License
+### 4. Environment setup
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Configure your database credentials in the `.env` file:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=monitoring
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+### 5. Run database migrations
+
+> **⚠️ Important:** This project uses migration files located in the `database/migrations/final/` directory. You must specify this path when running migrations.
+
+```bash
+php artisan migrate --path=database/migrations/final
+```
+
+<details>
+<summary>📄 Migration files included</summary>
+
+| # | Migration File | Description |
+|---|----------------|-------------|
+| 1 | `0001_01_01_000000_create_users_table.php` | Users, password resets, and sessions tables |
+| 2 | `0001_01_01_000001_create_cache_table.php` | Cache and cache locks tables |
+| 3 | `0001_01_01_000002_create_jobs_table.php` | Jobs, job batches, and failed jobs tables |
+| 4 | `2026_01_07_010000_create_tenants_table.php` | Tenants table |
+| 5 | `2026_01_07_010001_create_assets_table.php` | Assets table |
+| 6 | `2026_01_07_010002_create_contracts_table.php` | Contracts table |
+| 7 | `2026_01_07_010003_create_contract_assets_table.php` | Contract-Asset pivot table |
+| 8 | `2026_01_07_010004_create_payments_table.php` | Payments table |
+| 9 | `2026_02_03_100000_add_role_to_users_table.php` | Adds role column to users |
+| 10 | `2026_02_20_021059_create_contract_workflows_table.php` | Contract workflows table |
+| 11 | `2026_02_20_021105_create_workflow_evidence_table.php` | Workflow evidence uploads table |
+| 12 | `2026_02_24_023848_create_invoices_table.php` | Invoices table |
+| 13 | `2026_02_24_023925_create_invoice_assets_table.php` | Invoice-Asset pivot table |
+| 14 | `2026_02_27_040000_create_amendments_table.php` | Contract amendments table |
+| 15 | `2026_02_27_040001_create_amendment_assets_table.php` | Amendment-Asset pivot table |
+| 16 | `2026_02_27_040002_add_amendment_id_to_payments_table.php` | Links payments to amendments |
+
+</details>
+
+### 6. Run database seeders
+
+> **⚠️ Important:** Seeders **must** be run individually and in the exact order listed below, as each seeder depends on data from the previous one.
+
+```bash
+php artisan db:seed --class=TenantSeeder
+php artisan db:seed --class=TestAsset
+php artisan db:seed --class=TestContractSeeder
+php artisan db:seed --class=ContractAsset
+php artisan db:seed --class=PaymentSeeder
+```
+
+| Order | Seeder | Description |
+|-------|--------|-------------|
+| 1 | `TenantSeeder` | Seeds tenant records |
+| 2 | `TestAsset` | Seeds asset/property records |
+| 3 | `TestContractSeeder` | Seeds contracts linked to tenants |
+| 4 | `ContractAsset` | Seeds the contract-asset relationships |
+| 5 | `PaymentSeeder` | Seeds payment records for contracts |
+
+### 7. Build frontend assets
+
+```bash
+npm run build
+```
+
+### 8. Start the development server
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Or use the composer shortcut to run everything concurrently:
+
+```bash
+composer dev
+```
+
+The application will be available at **http://localhost:8000**.
+
+---
+
+## 📁 Project Structure
+
+```
+monitoring/
+├── app/
+│   ├── Http/Controllers/    # Application controllers
+│   └── Models/              # Eloquent models
+├── database/
+│   ├── migrations/final/    # ⭐ Production migration files
+│   ├── seeders/             # Database seeders
+│   └── factories/           # Model factories
+├── resources/
+│   └── views/               # Blade templates
+│       ├── amendments/      # Amendment views
+│       ├── assets/          # Asset views
+│       ├── contracts/       # Contract views
+│       ├── invoices/        # Invoice views
+│       ├── layouts/         # Layout templates
+│       ├── login/           # Auth views
+│       ├── payments/        # Payment views
+│       ├── tenants/         # Tenant views
+│       └── dashboard.blade.php
+├── routes/                  # Route definitions
+├── public/                  # Public assets
+└── config/                  # Configuration files
+```
+
+---
+
+## 🗄️ Database Schema
+
+```mermaid
+erDiagram
+    USERS ||--o{ CONTRACTS : manages
+    TENANTS ||--o{ CONTRACTS : has
+    CONTRACTS ||--o{ CONTRACT_ASSETS : contains
+    ASSETS ||--o{ CONTRACT_ASSETS : linked_to
+    CONTRACTS ||--o{ PAYMENTS : receives
+    CONTRACTS ||--o{ CONTRACT_WORKFLOWS : tracks
+    CONTRACT_WORKFLOWS ||--o{ WORKFLOW_EVIDENCE : uploads
+    CONTRACTS ||--o{ INVOICES : generates
+    INVOICES ||--o{ INVOICE_ASSETS : includes
+    CONTRACTS ||--o{ AMENDMENTS : modified_by
+    AMENDMENTS ||--o{ AMENDMENT_ASSETS : contains
+    AMENDMENTS ||--o{ PAYMENTS : receives
+```
+
+---
+
+## 👤 Author
+
+**Evan** — Developer & Maintainer
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+```
+MIT License
+
+Copyright (c) 2026 Evan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
