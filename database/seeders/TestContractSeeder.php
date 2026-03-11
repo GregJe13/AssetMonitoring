@@ -25,37 +25,47 @@ class TestContractSeeder extends Seeder
      *  11 = PT. MITRA GRAHA INTI UTAMA (MGIU)         (id_tenant: 40051)
      *  12 = PT. INTI BUMI PERKASA                     (id_tenant: 40046)
      *  13 = PT. INTI KONTEN INDONESIA                 (id_tenant: 40047)
-     *  14 = PT DAYAMITRA TELEKOMUNIKASI Tbk            (id_tenant: 40215)
-     *  15 = PT EPID MENARA ASSETCO                    (id_tenant: 40044)
-     *  16 = PT Mega Akses Persada                     (id_tenant: 40243)
-     *  17 = PT. WADMA BERKAH SEDAYA                   (id_tenant: 40247)
-     *  18 = Joni Wibowo                               (id_tenant: 40253)
-     *  19 = Ayi Dadi Cipta Ganda                      (id_tenant: 40254)
-     *  20 = Koperasi R Usaha                          (id_tenant: 40026)
-     *  21 = YAYASAN DIAN KENCANA INTI                 (id_tenant: 40194)
-     *  22 = PT. WIDYA BHAKTI INTI (WBI)               (id_tenant: 40060)
-     *  23 = PT FOCUS MEDIA INDONESIA                  (no id)
-     *  24 = PT. TARGET MEDIA NUSANTARA                (id_tenant: 40220)
-     *  25 = PT. BANK CIMB NIAGA TBK                   (id_tenant: 40083)
-     *  26 = PT. BANK NEGARA INDONESIA                 (id_tenant: 40033)
-     *  27 = PT. BANK OCBC NISP,Tbk                    (id_tenant: 40034)
-     *  28 = PT. BANK MANDIRI, TBK                     (id_tenant: 40134)
-     *  29 = PT Inti Global Optical Communication      (id_tenant: 40190)
-     *  30 = PT GLOBAL YIMI CARGO                      (id_tenant: 40252)
-     *  31 = CV. CIPTA KREASINDO TEKNIKA               (id_tenant: 40009)
-     *  32 = PT SAGE KONSTRUKSI INDONESIA              (id_tenant: 40213)
-     *  33 = PT BANGUN BERKAT SAUDARA                  (id_tenant: 40160)
-     *  34 = PT JETEC INDONESIA                        (no id)
-     *  35 = PT Khaimar Indo Freight                   (id_tenant: 40236)
-     *  36 = PT Rhacindo Adi Persada                   (id_tenant: 40167)
-     *  37 = CV Rotary Pratama Eng                     (no id)
-     *  38 = PT EDRA                                   (id_tenant: 40124)
-     *  39 = Elfia Minisoccer                          (id_tenant: 40228)
-     *  40 = INTIVENUE                                 (id_tenant: 40159)
-     *  41 = DMANTEN                                   (id_tenant: 40250)
-     *  42 = Kantin Sehat / Koperasi INTI              (id_tenant: 40026)
-     *  43 = Parkir Toha 77 / Koperasi INTI            (id_tenant: 40026)
-     *  44 = Parkir Palasari / PT. MITRA GRAHA         (id_tenant: 40051)
+     *  14 = PT INTI KRIDA EKAJASA                     (id_tenant: 40253)
+     *  15 = PT DAYAMITRA TELEKOMUNIKASI Tbk           (id_tenant: 40215)
+     *  16 = PT EPID MENARA ASSETCO                    (id_tenant: 40044)
+     *  17 = PT Mega Akses Persada                     (id_tenant: 40243)
+     *  18 = PT. WADMA BERKAH SEDAYA                   (id_tenant: 40247)
+     *  19 = Joni Wibowo                               (id_tenant: 40253)
+     *  20 = Ayi Dadi Cipta Ganda                      (id_tenant: 40254)
+     *  21 = Koperasi R Usaha                          (id_tenant: 40026)
+     *  22 = YAYASAN DIAN KENCANA INTI                 (id_tenant: 40194)
+     *  23 = PT. WIDYA BHAKTI INTI (WBI)               (id_tenant: 40060)
+     *  24 = PT FOCUS MEDIA INDONESIA                  (no id)
+     *  25 = PT. TARGET MEDIA NUSANTARA                (id_tenant: 40220)
+     *  26 = PT. BANK CIMB NIAGA TBK                   (id_tenant: 40083)
+     *  27 = PT. BANK NEGARA INDONESIA                 (id_tenant: 40033)
+     *  28 = PT. BANK OCBC NISP,Tbk                    (id_tenant: 40034)
+     *  29 = PT. BANK MANDIRI, TBK                     (id_tenant: 40134)
+     *  30 = PT Inti Global Optical Communication      (id_tenant: 40190)
+     *  31 = PT GLOBAL YIMI CARGO                      (id_tenant: 40252)
+     *  32 = CV. CIPTA KREASINDO TEKNIKA               (id_tenant: 40009)
+     *  33 = PT SAGE KONSTRUKSI INDONESIA              (id_tenant: 40213)
+     *  34 = PT BANGUN BERKAT SAUDARA                  (id_tenant: 40160)
+     *  35 = PT JETEC INDONESIA                        (no id)
+     *  36 = PT Khaimar Indo Freight                   (id_tenant: 40236)
+     *  37 = PT Rhacindo Adi Persada                   (id_tenant: 40167)
+     *  38 = CV Rotary Pratama Eng                     (no id)
+     *  39 = PT EDRA                                   (id_tenant: 40124)
+     *  40 = Elfia Minisoccer                          (id_tenant: 40228)
+     *  41 = INTIVENUE                                 (id_tenant: 40159)
+     *  42 = DMANTEN                                   (id_tenant: 40250)
+     *  43 = Kantin Sehat / Koperasi INTI              (id_tenant: 40026)
+     *  44 = Parkir Toha 77 / Koperasi INTI            (id_tenant: 40026)
+     *  45 = Parkir Palasari / PT. MITRA GRAHA         (id_tenant: 40051)
+     *  46 = PT JALAWAVE                               (no id)
+     *  47 = PT INET                                   (no id)
+     *  48 = PT MARLIP                                 (no id)
+     *  49 = PT KAIROS MULTI DIMENSI                   (id_tenant: 40256)
+     *  50 = PD MCR JAYA                               (id_tenant: 40257)
+     *  51 = JADDASOLUTION                             (id_tenant: 40211)
+     *  52 = Ex BNI                                    (no id)
+     *  53 = Kerjasama                                 (no id)
+     *  54 = PADEL                                     (no id)
      *
      * renewal_notes repurposed as notes for status context (Konfirmasi Perpanjangan, Proses BAK, etc.)
      */
@@ -242,7 +252,7 @@ class TestContractSeeder extends Seeder
                 'file_pks'               => null,
                 'start_date'             => '2025-01-01',
                 'end_date'               => '2025-12-31',
-                'total_rental_value'     => 47848320,
+                'total_rental_value'     => 27000000,
                 'security_deposit'       => null,
                 'is_upfront'             => true,
                 'payment_start_date'     => '2025-01-01',
@@ -280,24 +290,24 @@ class TestContractSeeder extends Seeder
             // 11. PT. MITRA GRAHA INTI UTAMA (MGIU) – GKP Lt. 3 Utara
             [
                 'tenant_id'              => 11,
-                'no_bak'                 => '189/HK.03/030302/2024',
-                'date_bak'               => '2024-12-24',
+                'no_bak'                 => '10/HK.03/030301/2026',
+                'date_bak'               => '2026-01-20',
                 'file_bak'               => null,
                 'no_pks'                 => null,
                 'date_pks'               => null,
                 'file_pks'               => null,
-                'start_date'             => '2025-01-01',
-                'end_date'               => '2025-12-31',
+                'start_date'             => '2026-01-01',
+                'end_date'               => '2026-12-31',
                 'total_rental_value'     => 47848320,
                 'security_deposit'       => null,
                 'is_upfront'             => true,
-                'payment_start_date'     => '2025-01-01',
+                'payment_start_date'     => '2026-01-01',
                 'payment_interval_value' => 1,
                 'payment_interval_unit'  => 'year',
-                'status'                 => 'expired',
+                'status'                 => 'active',
                 'pihak_pertama'          => $pihakPertama,
                 'pihak_kedua'            => 'PT. MITRA GRAHA INTI UTAMA (MGIU)',
-                'renewal_notes'          => 'Konfirmasi Perpanjangan',
+                'renewal_notes'          => null,
             ],
 
             // 12. PT. INTI BUMI PERKASA – GKP Lt. 3 Utara (Lt3)
@@ -326,24 +336,24 @@ class TestContractSeeder extends Seeder
             // 13. PT. INTI BUMI PERKASA – GKP Lt. 2 Utara (Lt2)
             [
                 'tenant_id'              => 12,
-                'no_bak'                 => '155/HK.03/030301/2025',
-                'date_bak'               => '2025-07-17',
+                'no_bak'                 => '6/HK.03/030301/2026',
+                'date_bak'               => '2026-01-13',
                 'file_bak'               => null,
-                'no_pks'                 => '144/HK.03/030301/2025',
-                'date_pks'               => '2025-08-19',
+                'no_pks'                 => null,
+                'date_pks'               => null,
                 'file_pks'               => null,
-                'start_date'             => '2025-07-01',
-                'end_date'               => '2025-12-31',
+                'start_date'             => '2026-01-01',
+                'end_date'               => '2026-06-30',
                 'total_rental_value'     => 88164000,
                 'security_deposit'       => null,
                 'is_upfront'             => false,
-                'payment_start_date'     => '2025-07-01',
+                'payment_start_date'     => '2026-01-01',
                 'payment_interval_value' => 1,
                 'payment_interval_unit'  => 'year',
-                'status'                 => 'expired',
+                'status'                 => 'active',
                 'pihak_pertama'          => $pihakPertama,
                 'pihak_kedua'            => 'PT. INTI BUMI PERKASA',
-                'renewal_notes'          => 'Balancing. Proses BAK',
+                'renewal_notes'          => 'Balancing',
             ],
 
             // 14. PT. INTI KONTEN INDONESIA – GKP Lt. 2 Utara
@@ -371,7 +381,7 @@ class TestContractSeeder extends Seeder
 
             // 15. PT DAYAMITRA TELEKOMUNIKASI Tbk – Rooftop GKP
             [
-                'tenant_id'              => 14,
+                'tenant_id'              => 15,
                 'no_bak'                 => '013/PL.01/030300/2023',
                 'date_bak'               => '2023-03-13',
                 'file_bak'               => null,
@@ -379,7 +389,7 @@ class TestContractSeeder extends Seeder
                 'date_pks'               => '2023-03-13',
                 'file_pks'               => null,
                 'start_date'             => '2023-01-02',
-                'end_date'               => '1933-01-01', // data anomaly from source, kept as-is
+                'end_date'               => '2033-01-01', // data anomaly from source, kept as-is
                 'total_rental_value'     => 1000000000,
                 'security_deposit'       => null,
                 'is_upfront'             => true,
@@ -394,7 +404,7 @@ class TestContractSeeder extends Seeder
 
             // 16. PT EPID MENARA ASSETCO – Rooftop GPT
             [
-                'tenant_id'              => 15,
+                'tenant_id'              => 16,
                 'no_bak'                 => '2525/PL.01/020804/2021',
                 'date_bak'               => '2021-10-27',
                 'file_bak'               => null,
@@ -417,7 +427,7 @@ class TestContractSeeder extends Seeder
 
             // 17. PT Mega Akses Persada – Sub Duct GPT
             [
-                'tenant_id'              => 16,
+                'tenant_id'              => 17,
                 'no_bak'                 => '169/HK.03/030301/2025',
                 'date_bak'               => '2025-10-02',
                 'file_bak'               => null,
@@ -440,7 +450,7 @@ class TestContractSeeder extends Seeder
 
             // 18. PT. WADMA BERKAH SEDAYA – Sub Duct GKP
             [
-                'tenant_id'              => 17,
+                'tenant_id'              => 18,
                 'no_bak'                 => '71/HK.03/030301/2025',
                 'date_bak'               => '2025-05-19',
                 'file_bak'               => null,
@@ -463,7 +473,7 @@ class TestContractSeeder extends Seeder
 
             // 19. Joni Wibowo – GKL Gedung O (unit 1)
             [
-                'tenant_id'              => 18,
+                'tenant_id'              => 19,
                 'no_bak'                 => '137/HK.03/030301/2025',
                 'date_bak'               => '2025-04-14',
                 'file_bak'               => null,
@@ -486,7 +496,7 @@ class TestContractSeeder extends Seeder
 
             // 20. Ayi Dadi Cipta Ganda – GKL Gedung O (unit 2)
             [
-                'tenant_id'              => 19,
+                'tenant_id'              => 20,
                 'no_bak'                 => '138/HK.03/030301/2025',
                 'date_bak'               => '2025-04-14',
                 'file_bak'               => null,
@@ -507,32 +517,9 @@ class TestContractSeeder extends Seeder
                 'renewal_notes'          => '100% diperhitungkan dengan nilai IPK',
             ],
 
-            // 21. Koperasi R Usaha – GKL Gedung G (Proses BAK, no contract numbers yet)
-            [
-                'tenant_id'              => 20,
-                'no_bak'                 => null,
-                'date_bak'               => null,
-                'file_bak'               => null,
-                'no_pks'                 => null,
-                'date_pks'               => null,
-                'file_pks'               => null,
-                'start_date'             => '2026-01-01',
-                'end_date'               => '2026-12-31',
-                'total_rental_value'     => 0,
-                'security_deposit'       => null,
-                'is_upfront'             => false,
-                'payment_start_date'     => '2026-01-01',
-                'payment_interval_value' => 1,
-                'payment_interval_unit'  => 'month',
-                'status'                 => 'draft',
-                'pihak_pertama'          => $pihakPertama,
-                'pihak_kedua'            => 'Koperasi R Usaha',
-                'renewal_notes'          => 'Proses BAK',
-            ],
-
             // 22. YAYASAN DIAN KENCANA INTI – GKL Gedung AC
             [
-                'tenant_id'              => 21,
+                'tenant_id'              => 22,
                 'no_bak'                 => '36/HK.03/030300/2025',
                 'date_bak'               => '2025-03-04',
                 'file_bak'               => null,
@@ -540,7 +527,7 @@ class TestContractSeeder extends Seeder
                 'date_pks'               => '2025-03-10',
                 'file_pks'               => null,
                 'start_date'             => '2025-03-01',
-                'end_date'               => '1930-02-28', // data anomaly from source, kept as-is
+                'end_date'               => '2030-02-28', // data anomaly from source, kept as-is
                 'total_rental_value'     => 475000000,
                 'security_deposit'       => null,
                 'is_upfront'             => false,
@@ -555,7 +542,7 @@ class TestContractSeeder extends Seeder
 
             // 23. YAYASAN DIAN KENCANA INTI – GKL Gedung AD
             [
-                'tenant_id'              => 21,
+                'tenant_id'              => 22,
                 'no_bak'                 => '150/HK/03/030300/2024',
                 'date_bak'               => '2024-10-15',
                 'file_bak'               => null,
@@ -578,7 +565,7 @@ class TestContractSeeder extends Seeder
 
             // 24. PT. WIDYA BHAKTI INTI (WBI) – GKL Gedung D (Poli)
             [
-                'tenant_id'              => 22,
+                'tenant_id'              => 23,
                 'no_bak'                 => '386/HK.03/030302/2023',
                 'date_bak'               => '2023-02-18',
                 'file_bak'               => null,
@@ -601,7 +588,7 @@ class TestContractSeeder extends Seeder
 
             // 25. PT. WIDYA BHAKTI INTI (WBI) – GKL Gedung AA (Lab)
             [
-                'tenant_id'              => 22,
+                'tenant_id'              => 23,
                 'no_bak'                 => '209/HK.03/020804/2021',
                 'date_bak'               => '2021-11-16',
                 'file_bak'               => null,
@@ -624,30 +611,30 @@ class TestContractSeeder extends Seeder
 
             // 26. PT. WIDYA BHAKTI INTI (WBI) – GKL Gedung D (Apotik)
             [
-                'tenant_id'              => 22,
-                'no_bak'                 => '52/HK.03/030301/2025',
-                'date_bak'               => '2025-04-21',
+                'tenant_id'              => 23,
+                'no_bak'                 => '24/HK.03/030301/2026',
+                'date_bak'               => '2026-02-02',
                 'file_bak'               => null,
-                'no_pks'                 => '92/HK.03/030301/2025',
-                'date_pks'               => '2025-06-12',
+                'no_pks'                 => null,
+                'date_pks'               => null,
                 'file_pks'               => null,
-                'start_date'             => '2025-01-01',
-                'end_date'               => '2025-12-31',
+                'start_date'             => '2026-01-01',
+                'end_date'               => '2026-12-31',
                 'total_rental_value'     => 30801600,
                 'security_deposit'       => null,
                 'is_upfront'             => false,
-                'payment_start_date'     => '2025-01-01',
+                'payment_start_date'     => '2026-01-01',
                 'payment_interval_value' => 1,
                 'payment_interval_unit'  => 'year',
-                'status'                 => 'expired',
+                'status'                 => 'active',
                 'pihak_pertama'          => $pihakPertama,
                 'pihak_kedua'            => 'PT. WIDYA BHAKTI INTI (WBI)',
-                'renewal_notes'          => 'Balancing. Konfirmasi Perpanjangan',
+                'renewal_notes'          => 'Balancing',
             ],
 
             // 27. PT. WIDYA BHAKTI INTI (WBI) – GKL Gedung V (Gudang)
             [
-                'tenant_id'              => 22,
+                'tenant_id'              => 23,
                 'no_bak'                 => '01A/HK.03/030301/2025',
                 'date_bak'               => '2025-01-02',
                 'file_bak'               => null,
@@ -670,7 +657,7 @@ class TestContractSeeder extends Seeder
 
             // 28. PT. TARGET MEDIA NUSANTARA – Media LED
             [
-                'tenant_id'              => 24,
+                'tenant_id'              => 25,
                 'no_bak'                 => null,
                 'date_bak'               => null,
                 'file_bak'               => null,
@@ -693,22 +680,22 @@ class TestContractSeeder extends Seeder
 
             // 29. PT. BANK CIMB NIAGA TBK – Gerbang Toha 77
             [
-                'tenant_id'              => 25,
+                'tenant_id'              => 26,
                 'no_bak'                 => null,
                 'date_bak'               => null,
                 'file_bak'               => null,
                 'no_pks'                 => '13/HK.03/030302/2024',
                 'date_pks'               => '2024-01-31',
                 'file_pks'               => null,
-                'start_date'             => '2023-12-31',
-                'end_date'               => '2025-12-30',
-                'total_rental_value'     => 100800000,
+                'start_date'             => '2023-12-30',
+                'end_date'               => '2026-12-29',
+                'total_rental_value'     => 148500000,
                 'security_deposit'       => null,
                 'is_upfront'             => true,
-                'payment_start_date'     => '2023-12-31',
+                'payment_start_date'     => '2023-12-30',
                 'payment_interval_value' => 1,
                 'payment_interval_unit'  => 'year',
-                'status'                 => 'expired',
+                'status'                 => 'active',
                 'pihak_pertama'          => $pihakPertama,
                 'pihak_kedua'            => 'PT. BANK CIMB NIAGA TBK',
                 'renewal_notes'          => null,
@@ -716,7 +703,7 @@ class TestContractSeeder extends Seeder
 
             // 30. PT. BANK NEGARA INDONESIA – Gerbang Toha 77
             [
-                'tenant_id'              => 26,
+                'tenant_id'              => 27,
                 'no_bak'                 => null,
                 'date_bak'               => null,
                 'file_bak'               => null,
@@ -739,7 +726,7 @@ class TestContractSeeder extends Seeder
 
             // 31. PT. BANK OCBC NISP,Tbk – Gerbang Toha 77
             [
-                'tenant_id'              => 27,
+                'tenant_id'              => 28,
                 'no_bak'                 => null,
                 'date_bak'               => null,
                 'file_bak'               => null,
@@ -762,7 +749,7 @@ class TestContractSeeder extends Seeder
 
             // 32. PT. BANK MANDIRI, TBK – Gerbang Toha 77
             [
-                'tenant_id'              => 28,
+                'tenant_id'              => 29,
                 'no_bak'                 => null,
                 'date_bak'               => null,
                 'file_bak'               => null,
@@ -785,7 +772,7 @@ class TestContractSeeder extends Seeder
 
             // 33. PT Inti Global Optical Communication – Ex Gedung Sentral
             [
-                'tenant_id'              => 29,
+                'tenant_id'              => 30,
                 'no_bak'                 => '81/HK.03/030300/2025',
                 'date_bak'               => '2025-04-11',
                 'file_bak'               => null,
@@ -808,12 +795,12 @@ class TestContractSeeder extends Seeder
 
             // 34. PT GLOBAL YIMI CARGO – Ex Gedung Utama
             [
-                'tenant_id'              => 30,
+                'tenant_id'              => 31,
                 'no_bak'                 => '195/HK.03/030300/2025',
                 'date_bak'               => '2025-11-04',
                 'file_bak'               => null,
-                'no_pks'                 => null,
-                'date_pks'               => null,
+                'no_pks'                 => '225/HK.03/030300/2025',
+                'date_pks'               => '2025-12-03',
                 'file_pks'               => null,
                 'start_date'             => '2025-11-16',
                 'end_date'               => '2026-02-15',
@@ -831,12 +818,12 @@ class TestContractSeeder extends Seeder
 
             // 35. PT GLOBAL YIMI CARGO – Ex Gedung Prafab (row 39 no tenant name, same as Yimi Cargo context)
             [
-                'tenant_id'              => 30,
+                'tenant_id'              => 31,
                 'no_bak'                 => '194/HK.03/030300/2025',
                 'date_bak'               => '2025-11-10',
                 'file_bak'               => null,
-                'no_pks'                 => null,
-                'date_pks'               => null,
+                'no_pks'                 => '226/HK.03/030300/2025',
+                'date_pks'               => '2025-12-03',
                 'file_pks'               => null,
                 'start_date'             => '2025-11-10',
                 'end_date'               => '2026-02-09',
@@ -854,11 +841,11 @@ class TestContractSeeder extends Seeder
 
             // 36. PT GLOBAL YIMI CARGO – Ex Gedung Utama (Loading/Parkir, row 40)
             [
-                'tenant_id'              => 30,
+                'tenant_id'              => 31,
                 'no_bak'                 => '2045/HK.03/030301/2025',
                 'date_bak'               => '2025-12-02',
                 'file_bak'               => null,
-                'no_pks'                 => null,
+                'no_pks'                 => '89/Hk.03/030300/2025',
                 'date_pks'               => null,
                 'file_pks'               => null,
                 'start_date'             => '2025-12-03',
@@ -877,7 +864,7 @@ class TestContractSeeder extends Seeder
 
             // 37. CV. CIPTA KREASINDO TEKNIKA – Ex Gedung Prafab
             [
-                'tenant_id'              => 31,
+                'tenant_id'              => 32,
                 'no_bak'                 => '136/HK.03/030301/2025',
                 'date_bak'               => '2025-08-12',
                 'file_bak'               => null,
@@ -900,32 +887,32 @@ class TestContractSeeder extends Seeder
 
             // 38. PT SAGE KONSTRUKSI INDONESIA – EX Poliklinik
             [
-                'tenant_id'              => 32,
-                'no_bak'                 => '168/HK.03/030301/2025',
-                'date_bak'               => '2025-10-02',
+                'tenant_id'              => 33,
+                'no_bak'                 => '03/HK.03/030301/2026',
+                'date_bak'               => '2026-01-14',
                 'file_bak'               => null,
                 'no_pks'                 => null,
                 'date_pks'               => null,
                 'file_pks'               => null,
-                'start_date'             => '2025-10-01',
-                'end_date'               => '2025-12-31',
+                'start_date'             => '2026-01-01',
+                'end_date'               => '2026-03-31',
                 'total_rental_value'     => 16539000,
                 'security_deposit'       => null,
                 'is_upfront'             => true,
-                'payment_start_date'     => '2025-10-01',
+                'payment_start_date'     => '2026-01-01',
                 'payment_interval_value' => 1,
                 'payment_interval_unit'  => 'year',
-                'status'                 => 'expired',
+                'status'                 => 'active',
                 'pihak_pertama'          => $pihakPertama,
                 'pihak_kedua'            => 'PT SAGE KONSTRUKSI INDONESIA',
-                'renewal_notes'          => 'Proses BAK',
+                'renewal_notes'          => null,
             ],
 
             // 39. PT BANGUN BERKAT SAUDARA – Gedung B
             [
-                'tenant_id'              => 33,
-                'no_bak'                 => '176/HK.03/030301/2025',
-                'date_bak'               => '2025-10-13',
+                'tenant_id'              => 34,
+                'no_bak'                 => '176/HK.03/030301/2026',
+                'date_bak'               => '2026-10-13',
                 'file_bak'               => null,
                 'no_pks'                 => null,
                 'date_pks'               => null,
@@ -946,9 +933,9 @@ class TestContractSeeder extends Seeder
 
             // 40. PT Khaimar Indo Freight – Ex Gedung Prafab
             [
-                'tenant_id'              => 35,
+                'tenant_id'              => 36,
                 'no_bak'                 => '86A/HK.03/030301/2025',
-                'date_bak'               => '2025-11-24',
+                'date_bak'               => '2025-11-21',
                 'file_bak'               => null,
                 'no_pks'                 => null,
                 'date_pks'               => null,
@@ -969,9 +956,9 @@ class TestContractSeeder extends Seeder
 
             // 41. PT Rhacindo Adi Persada – Gedung C
             [
-                'tenant_id'              => 36,
-                'no_bak'                 => '199/HK.03/030301/2025',
-                'date_bak'               => '2025-11-04',
+                'tenant_id'              => 37,
+                'no_bak'                 => '1619/HK.03/030301/2025',
+                'date_bak'               => '2026-09-02',
                 'file_bak'               => null,
                 'no_pks'                 => null,
                 'date_pks'               => null,
@@ -992,7 +979,7 @@ class TestContractSeeder extends Seeder
 
             // 42. PT EDRA – Ex Gedung Kimia
             [
-                'tenant_id'              => 38,
+                'tenant_id'              => 39,
                 'no_bak'                 => '164/HK.03/030301/2025',
                 'date_bak'               => '2025-09-22',
                 'file_bak'               => null,
@@ -1012,6 +999,291 @@ class TestContractSeeder extends Seeder
                 'pihak_kedua'            => 'PT EDRA',
                 'renewal_notes'          => null,
             ],
+
+            // =========================================================
+            // KONTRAK PERPANJANGAN / TAMBAHAN (dari Excel v2)
+            // =========================================================
+
+            // PT CITRA INDUSTRI KERETA API – GKL Gedung H (perpanjangan)
+            [
+                'tenant_id'              => 2,
+                'no_bak'                 => '39/HK.03/030301/2026',
+                'date_bak'               => '2026-02-13',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-03-01',
+                'end_date'               => '2026-08-31',
+                'total_rental_value'     => 82620000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-03-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT CITRA INDUSTRI KERETA API',
+                'renewal_notes'          => null,
+            ],
+
+            // PT INTI KRIDA EKAJASA – GKP Lt. 3 Utara
+            [
+                'tenant_id'              => 14,
+                'no_bak'                 => 'l',
+                'date_bak'               => '2025-12-08',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-01-05',
+                'end_date'               => '2026-04-04',
+                'total_rental_value'     => 5850000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-01-05',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT INTI KRIDA EKAJASA',
+                'renewal_notes'          => null,
+            ],
+
+            // PT PUTRA TELEKOMUNIKASI INDONESIA – GKP Lt. 3 Utara (perpanjangan)
+            [
+                'tenant_id'              => 7,
+                'no_bak'                 => '29/HK.03/030301/2026',
+                'date_bak'               => '2026-02-06',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-02-01',
+                'end_date'               => '2026-04-30',
+                'total_rental_value'     => 8970000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-02-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT PUTRA TELEKOMUNIKASI INDONESIA',
+                'renewal_notes'          => null,
+            ],
+
+            // PT GLOBAL YIMI CARGO – Ex Gedung Prafab (perpanjangan)
+            [
+                'tenant_id'              => 31,
+                'no_bak'                 => '27/HK.03/030301/2026',
+                'date_bak'               => '2026-02-06',
+                'file_bak'               => null,
+                'no_pks'                 => '18/HK.03/030301/2026',
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-02-10',
+                'end_date'               => '2026-03-09',
+                'total_rental_value'     => 58300000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-02-10',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT GLOBAL YIMI CARGO',
+                'renewal_notes'          => null,
+            ],
+
+            // CV. CIPTA KREASINDO TEKNIKA – Ex Gedung Prafab (perpanjangan)
+            [
+                'tenant_id'              => 32,
+                'no_bak'                 => '37/HK.03/030301/2026',
+                'date_bak'               => '2026-02-13',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-03-01',
+                'end_date'               => '2026-08-31',
+                'total_rental_value'     => 25830000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-03-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'CV. CIPTA KREASINDO TEKNIKA',
+                'renewal_notes'          => null,
+            ],
+
+            // PT BANGUN BERKAT SAUDARA – Gedung B (perpanjangan)
+            [
+                'tenant_id'              => 34,
+                'no_bak'                 => '14/HK.03/030301/2026',
+                'date_bak'               => '2026-01-21',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-01-16',
+                'end_date'               => '2026-04-15',
+                'total_rental_value'     => 4455000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-01-16',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT BANGUN BERKAT SAUDARA',
+                'renewal_notes'          => null,
+            ],
+
+            // PT Khaimar Indo Freight – Ex Gedung Prafab (perpanjangan)
+            [
+                'tenant_id'              => 36,
+                'no_bak'                 => '20/HK.03/030301/2026',
+                'date_bak'               => '2026-03-04',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-02-02',
+                'end_date'               => '2026-05-01',
+                'total_rental_value'     => 36000000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-02-02',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT Khaimar Indo Freight',
+                'renewal_notes'          => null,
+            ],
+
+            // PT Rhacindo Adi Persada – Gedung C (perpanjangan)
+            [
+                'tenant_id'              => 37,
+                'no_bak'                 => '58/HK.03/030301/2026',
+                'date_bak'               => '2026-02-25',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-03-02',
+                'end_date'               => '2026-06-01',
+                'total_rental_value'     => 4500000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-03-02',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT Rhacindo Adi Persada',
+                'renewal_notes'          => null,
+            ],
+
+            // PT EDRA – Ex Gedung Kimia (perpanjangan)
+            [
+                'tenant_id'              => 39,
+                'no_bak'                 => '5/HK.03/030301/2026',
+                'date_bak'               => '2026-01-19',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-01-21',
+                'end_date'               => '2026-04-20',
+                'total_rental_value'     => 31500000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2026-01-21',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT EDRA',
+                'renewal_notes'          => null,
+            ],
+
+            // =========================================================
+            // TENANT BARU (dari Excel v2)
+            // =========================================================
+
+            // PT KAIROS MULTI DIMENSI – Ex Gedung Prafab
+            [
+                'tenant_id'              => 49,
+                'no_bak'                 => '121/HK.03/030300/2026',
+                'date_bak'               => '2026-01-26',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-05-01',
+                'end_date'               => '2027-04-30',
+                'total_rental_value'     => 1056540000,
+                'security_deposit'       => null,
+                'is_upfront'             => false,
+                'payment_start_date'     => '2026-05-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PT KAIROS MULTI DIMENSI',
+                'renewal_notes'          => 'Termin 1 50%, Termin 2 50%',
+            ],
+
+            // PD MCR JAYA – Ex Gedung Utama
+            [
+                'tenant_id'              => 50,
+                'no_bak'                 => '40/HK.03/030301/2026',
+                'date_bak'               => '2026-02-23',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2026-03-01',
+                'end_date'               => '2026-05-31',
+                'total_rental_value'     => 106560000,
+                'security_deposit'       => null,
+                'is_upfront'             => false,
+                'payment_start_date'     => '2026-03-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'PD MCR JAYA',
+                'renewal_notes'          => 'Termin 1 50%, Termin 2 50%',
+            ],
+
+            // JADDASOLUTION – Ex Gedung Poliklinik
+            [
+                'tenant_id'              => 51,
+                'no_bak'                 => '2154/HK.03/030301/2025',
+                'date_bak'               => '2026-09-09',
+                'file_bak'               => null,
+                'no_pks'                 => null,
+                'date_pks'               => null,
+                'file_pks'               => null,
+                'start_date'             => '2025-08-01',
+                'end_date'               => '2027-07-31',
+                'total_rental_value'     => 15120000,
+                'security_deposit'       => null,
+                'is_upfront'             => true,
+                'payment_start_date'     => '2025-08-01',
+                'payment_interval_value' => 1,
+                'payment_interval_unit'  => 'year',
+                'status'                 => 'active',
+                'pihak_pertama'          => $pihakPertama,
+                'pihak_kedua'            => 'JADDASOLUTION',
+                'renewal_notes'          => '100% diperhitungkan dengan nilai IPK',
+            ],
+
         ];
 
         foreach ($contracts as $contract) {

@@ -44,6 +44,7 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
 // Protected routes (require login)
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('tenants/search', [TenantController::class, 'search'])->name('tenants.search');
     Route::resource('tenants', TenantController::class);
     Route::get('assets/search', [AssetController::class, 'search'])->name('assets.search');
     Route::get('contracts/search', [ContractController::class, 'search'])->name('contracts.search');

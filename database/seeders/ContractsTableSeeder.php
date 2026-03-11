@@ -42,7 +42,7 @@ class ContractsTableSeeder extends Seeder
 
         $asset3 = Asset::create([
             'code' => 'GKP-LT4-001',
-            'name' -> 'Ruang Seminar Lantai 4',
+            'name' => 'Ruang Seminar Lantai 4',
             'location' => 'GKP LT.4 UTARA',
             'area_sqm' => 120,
             'building_condition' => 'baik',

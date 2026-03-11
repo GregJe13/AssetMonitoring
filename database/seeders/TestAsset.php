@@ -89,6 +89,7 @@ class TestAsset extends Seeder
             ['id_gedung' => '255-PG-6', 'name' => 'Gudang Komp. Sentral', 'area_sqm' => 1780],
             ['id_gedung' => '255-PG-7', 'name' => 'Gudang Kimia', 'area_sqm' => 750],
             ['id_gedung' => '255-PG-8', 'name' => 'Gudang Utama', 'area_sqm' => 3621],
+            ['id_gedung' => '255-PG-9', 'name' => 'Poliklinik dan RT', 'area_sqm' => 340],
         ];
 
         foreach ($assets255 as $assetData) {
