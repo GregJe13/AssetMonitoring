@@ -112,4 +112,31 @@ class TenantController extends Controller
         return redirect()->route('tenants.index')
             ->with('success', 'Tenant deleted successfully.');
     }
+
+    /**
+     * AJAX search endpoint for tenants.
+     */
+    public function search(Request $request)
+    {
+        $search = $request->get('search', '');
+
+        $tenants = Tenant::withCount(['contracts as active_contracts_count' => function ($query) {
+                $query->where('status', 'active');
+            }])
+            ->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('pic', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('id_tenant', 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->get();
+
+        $html = view('tenants._row', compact('tenants'))->render();
+
+        return response()->json([
+            'html'  => $html,
+            'count' => $tenants->count(),
+        ]);
+    }
 }

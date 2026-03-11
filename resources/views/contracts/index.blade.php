@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<div class="mt-8 flow-root" x-data="{ activeTab: '{{ $tab }}' }">
+<div class="mt-8 flow-root" id="tabContainer" x-data="{ activeTab: '{{ $tab }}' }">
     <!-- Tabs -->
     <div class="border-b border-gray-200 mb-4">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -128,8 +128,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch(query) {
         searchLoading.classList.remove('hidden');
         
-        // Determine which tab is active
-        const activeTab = document.querySelector('[x-data]').__x.$data.activeTab;
+        // Alpine v3: use Alpine.$data() to access component data
+        let activeTab = 'active';
+        try {
+            const xDataEl = document.getElementById('tabContainer');
+            activeTab = Alpine.$data(xDataEl).activeTab ?? 'active';
+        } catch(e) {
+            console.warn('Could not read Alpine tab state, defaulting to active', e);
+        }
+
         const targetBody = activeTab === 'active' 
             ? document.getElementById('activeContractsBody') 
             : document.getElementById('logContractsBody');
