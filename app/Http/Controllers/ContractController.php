@@ -73,10 +73,14 @@ class ContractController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_rental_value' => 'required|numeric|min:0',
             'security_deposit' => 'nullable|numeric|min:0',
-            'payment_interval_value' => 'required_if:is_upfront,0|integer|min:1',
-            'payment_interval_unit' => 'required_if:is_upfront,0|in:month,year',
-            'is_upfront' => 'boolean',
+            'payment_type' => 'required|in:upfront,interval,termin',
+            'payment_interval_value' => 'required_if:payment_type,interval|nullable|integer|min:1',
+            'payment_interval_unit' => 'required_if:payment_type,interval|nullable|in:month,year',
             'payment_start_date' => 'nullable|date|after_or_equal:start_date|before_or_equal:end_date',
+            // Termin fields
+            'termins' => 'required_if:payment_type,termin|nullable|array|min:1',
+            'termins.*.due_date' => 'required_with:termins|date',
+            'termins.*.amount_due' => 'required_with:termins|numeric|min:1',
             'pihak_pertama' => 'required|string',
             'pihak_kedua' => 'required|string',
             'asset_areas' => 'required|array|min:1',
@@ -94,7 +98,20 @@ class ContractController extends Controller
             'file_bak.required_with' => 'File BAK wajib diupload jika No. BAK diisi.',
             'file_bak.mimes' => 'File BAK harus berformat PDF.',
             'file_bak.max' => 'File BAK maksimal 10MB.',
+            'termins.required_if' => 'Termin data harus diisi jika tipe pembayaran adalah Termin.',
+            'termins.*.due_date.required_with' => 'Tanggal jatuh tempo setiap termin wajib diisi.',
+            'termins.*.amount_due.required_with' => 'Nominal setiap termin wajib diisi.',
         ]);
+
+        // If payment_type is termin, compute total_rental_value from sum of termins
+        $termins = [];
+        if ($validated['payment_type'] === 'termin' && !empty($validated['termins'])) {
+            $termins = $validated['termins'];
+            $validated['total_rental_value'] = collect($termins)->sum('amount_due');
+        }
+
+        // Remove termins from validated data (not a column)
+        unset($validated['termins']);
 
         // Custom validation: at least one of BAK or PKS must be filled
         if (empty($request->no_pks) && empty($request->no_bak)) {
@@ -130,8 +147,13 @@ class ContractController extends Controller
             $validated['file_bak'] = $request->file('file_bak')->store('contracts', 'public');
         }
 
-        // Create contract
+        // Create contract (observer will call generatePaymentSchedule for non-termin)
         $contract = Contract::create($validated);
+
+        // For termin mode, we need to pass termins to generatePaymentSchedule
+        if ($validated['payment_type'] === 'termin' && !empty($termins)) {
+            $contract->generatePaymentSchedule($termins);
+        }
 
         // Attach assets with their rented areas
         $attachData = [];

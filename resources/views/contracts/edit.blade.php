@@ -131,7 +131,7 @@
                     </div>
                 </div>
 
-                @if(!$contract->is_upfront)
+                @if($contract->payment_type === 'interval')
                 <div class="sm:col-span-3">
                     <label for="payment_start_date" class="block text-sm font-medium leading-6 text-gray-900">Payment Start Date</label>
                     <p class="text-sm text-gray-500 mb-1">Tanggal mulai jadwal pembayaran</p>

@@ -94,10 +94,14 @@ class AmendmentController extends Controller
             'new_start_date' => 'required|date',
             'new_end_date' => 'required|date|after_or_equal:new_start_date',
             'total_rental_value' => 'required|numeric|min:0',
-            'is_upfront' => 'boolean',
+            'payment_type' => 'required|in:upfront,interval,termin',
             'payment_start_date' => 'nullable|date',
-            'payment_interval_value' => 'required_if:is_upfront,false|nullable|integer|min:1',
-            'payment_interval_unit' => 'required_if:is_upfront,false|nullable|in:month,year',
+            'payment_interval_value' => 'required_if:payment_type,interval|nullable|integer|min:1',
+            'payment_interval_unit' => 'required_if:payment_type,interval|nullable|in:month,year',
+            // Termin fields
+            'termins' => 'required_if:payment_type,termin|nullable|array|min:1',
+            'termins.*.due_date' => 'required_with:termins|date',
+            'termins.*.amount_due' => 'required_with:termins|numeric|min:1',
             'no_bak' => 'nullable|string',
             'date_bak' => 'nullable|date',
             'file_bak' => 'nullable|file|mimes:pdf|max:10240',
@@ -113,7 +117,16 @@ class AmendmentController extends Controller
             'no_amendment.unique' => 'Nomor amandemen sudah digunakan.',
             'asset_areas.required' => 'Pilih minimal satu asset.',
             'new_end_date.after_or_equal' => 'Tanggal akhir harus sama atau setelah tanggal mulai.',
+            'termins.required_if' => 'Termin data harus diisi jika tipe pembayaran adalah Termin.',
         ]);
+
+        // If payment_type is termin, compute total from termins
+        $termins = [];
+        if ($validated['payment_type'] === 'termin' && !empty($validated['termins'])) {
+            $termins = $validated['termins'];
+            $validated['total_rental_value'] = collect($termins)->sum('amount_due');
+        }
+        unset($validated['termins']);
 
         // Filter out zero/null asset areas
         $assetAreas = collect($request->asset_areas)->filter(fn($v) => $v > 0);
@@ -142,13 +155,11 @@ class AmendmentController extends Controller
             $validated['file_pks'] = $request->file('file_pks')->store('amendment-files', 'public');
         }
 
-        DB::transaction(function () use ($validated, $contract, $assetAreas) {
+        DB::transaction(function () use ($validated, $contract, $assetAreas, $termins) {
             // Set old dates from parent contract (or latest amendment)
             $latestAmendment = $contract->amendments()->orderBy('amendment_number', 'desc')->first();
             $validated['old_start_date'] = $latestAmendment ? $latestAmendment->new_start_date : $contract->start_date;
             $validated['old_end_date'] = $latestAmendment ? $latestAmendment->new_end_date : $contract->end_date;
-
-            $validated['is_upfront'] = $validated['is_upfront'] ?? false;
 
             $amendment = Amendment::create($validated);
 
@@ -158,7 +169,7 @@ class AmendmentController extends Controller
             }
 
             // Generate payment schedule
-            $amendment->generatePaymentSchedule();
+            $amendment->generatePaymentSchedule($termins);
 
             // Mark workflow as followed-up
             $this->markWorkflowRenewal($validated['contract_id']);

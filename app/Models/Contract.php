@@ -40,7 +40,7 @@ class Contract extends Model
         'end_date',
         'total_rental_value',
         'security_deposit',
-        'is_upfront',
+        'payment_type',
         'payment_start_date',
         'payment_interval_value',
         'payment_interval_unit',
@@ -58,7 +58,7 @@ class Contract extends Model
         'payment_start_date' => 'date',
         'total_rental_value' => 'decimal:2',
         'security_deposit' => 'decimal:2',
-        'is_upfront' => 'boolean',
+        'payment_type' => 'string',
     ];
 
     /**
@@ -151,65 +151,67 @@ class Contract extends Model
      * Generate payment schedule when contract is created.
      * 
      * Logika:
-     * - Jika is_upfront = true → buat 1 record pembayaran dengan due_date = start_date
-     * - Jika is_upfront = false → hitung jumlah periode berdasarkan interval, 
-     *   buat record pembayaran untuk setiap periode
+     * - payment_type = 'upfront'  → 1 record, bayar 100% dimuka
+     * - payment_type = 'interval' → hitung periode berdasarkan interval
+     * - payment_type = 'termin'   → N record sesuai input user (array of {due_date, amount_due})
      * 
-     * Note: Menggunakan payment_start_date jika diisi, jika tidak menggunakan start_date
+     * @param array $termins  Untuk mode termin: [{due_date, amount_due}, ...]
      */
-    public function generatePaymentSchedule(): void
+    public function generatePaymentSchedule(array $termins = []): void
     {
         // Hapus payments lama jika ada (untuk regenerate)
         $this->payments()->forceDelete();
 
-        // Gunakan payment_start_date jika ada, jika tidak gunakan start_date
         $paymentStartDate = $this->payment_start_date ?? $this->start_date;
+        $today = now()->startOfDay();
 
-        if ($this->is_upfront) {
-            // Bayar 100% dimuka - hanya 1 record
+        // === UPFRONT ===
+        if ($this->payment_type === 'upfront') {
             $dueDate = $paymentStartDate;
             $this->payments()->create([
                 'period_number' => 0,
                 'due_date' => $dueDate,
                 'amount_due' => $this->total_rental_value,
                 'amount_paid' => 0,
-                'payment_status' => $dueDate < now()->startOfDay() ? 'overdue' : 'pending',
+                'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
             ]);
             return;
         }
 
-        // Hitung jumlah periode berdasarkan interval
+        // === TERMIN ===
+        if ($this->payment_type === 'termin') {
+            foreach ($termins as $i => $termin) {
+                $dueDate = Carbon::parse($termin['due_date']);
+                $this->payments()->create([
+                    'period_number' => $i + 1,
+                    'due_date' => $dueDate,
+                    'amount_due' => $termin['amount_due'],
+                    'amount_paid' => 0,
+                    'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
+                ]);
+            }
+            return;
+        }
+
+        // === INTERVAL (default) ===
         $startDate = Carbon::parse($paymentStartDate);
         $endDate = Carbon::parse($this->end_date);
-        $today = now()->startOfDay();
 
-        // Konversi interval ke bulan
         $intervalMonths = $this->payment_interval_unit === 'year'
             ? $this->payment_interval_value * 12
             : $this->payment_interval_value;
 
-        // Hitung total bulan kontrak dan jumlah periode
         $totalMonths = $startDate->diffInMonths($endDate);
         $periodCount = max(1, (int) ceil($totalMonths / $intervalMonths));
-        
-        // Hitung amount per periode
         $amountPerPeriod = round($this->total_rental_value / $periodCount, 2);
-        
-        // Handle pembulatan agar total tetap akurat
         $totalAllocated = 0;
 
-        // Generate payment records
         for ($i = 0; $i < $periodCount; $i++) {
             $dueDate = $startDate->copy()->addMonths($i * $intervalMonths);
-            
-            // Untuk periode terakhir, sesuaikan amount agar total pas
             $amount = ($i === $periodCount - 1)
                 ? $this->total_rental_value - $totalAllocated
                 : $amountPerPeriod;
-            
             $totalAllocated += $amount;
-
-            // Set status: overdue jika due_date sudah lewat
             $status = $dueDate < $today ? 'overdue' : 'pending';
 
             $this->payments()->create([
