@@ -57,7 +57,7 @@ class ContractsTableSeeder extends Seeder
                 'start_date' => '2026-01-01',
                 'end_date' => '2026-12-31',
                 'total_rental_value' => 120000000, // 120 juta
-                'is_upfront' => false,
+                'payment_type' => 'interval',
                 'payment_interval_value' => 1,
                 'payment_interval_unit' => 'month',
                 'status' => 'active',
@@ -70,7 +70,7 @@ class ContractsTableSeeder extends Seeder
                 'start_date' => '2026-01-01',
                 'end_date' => '2026-12-31',
                 'total_rental_value' => 48000000, // 48 juta
-                'is_upfront' => false,
+                'payment_type' => 'interval',
                 'payment_interval_value' => 3,
                 'payment_interval_unit' => 'month',
                 'status' => 'active',
@@ -83,7 +83,7 @@ class ContractsTableSeeder extends Seeder
                 'start_date' => '2026-01-01',
                 'end_date' => '2027-12-31',
                 'total_rental_value' => 200000000, // 200 juta
-                'is_upfront' => true,
+                'payment_type' => 'upfront',
                 'status' => 'active',
             ],
             
@@ -94,7 +94,7 @@ class ContractsTableSeeder extends Seeder
                 'start_date' => '2027-01-01',
                 'end_date' => '2027-06-30',
                 'total_rental_value' => 72000000, // 72 juta
-                'is_upfront' => false,
+                'payment_type' => 'interval',
                 'payment_interval_value' => 1,
                 'payment_interval_unit' => 'month',
                 'status' => 'active',
@@ -125,7 +125,7 @@ class ContractsTableSeeder extends Seeder
             }
 
             // Generate payments based on contract configuration
-            if (!$contractData['is_upfront']) {
+            if ($contractData['payment_type'] !== 'upfront') {
                 $this->generatePaymentsForContract($contract);
             }
         }

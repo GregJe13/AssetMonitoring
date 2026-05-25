@@ -65,10 +65,11 @@
     </div>
 </div>
 
-@if(session('success'))
+@if(session('success') || session('error'))
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    @if(session('success'))
     Swal.fire({
         icon: 'success',
         title: 'Email Terkirim! 📧',
@@ -84,6 +85,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }).then((result) => {
         window.location.href = "{{ route('login') }}";
     });
+    @endif
+
+    @if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops! 😞',
+        text: '{{ session('error') }}',
+        confirmButtonColor: '#EF4444',
+        confirmButtonText: 'Tutup',
+    });
+    @endif
 });
 </script>
 @endif

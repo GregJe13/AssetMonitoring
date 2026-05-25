@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use App\Traits\LogsActivity;
 
 class Tenant extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -45,6 +46,17 @@ class Tenant extends Model
     public function contractHistory(): HasMany
     {
         return $this->hasMany(Contract::class);
+    }
+
+    /**
+     * Get active KSU (profit-sharing) contracts.
+     */
+    public function ksuContracts(): HasMany
+    {
+        return $this->hasMany(Contract::class)
+                    ->where('contract_type', 'ksu')
+                    ->where('status', 'active')
+                    ->where('end_date', '>=', now()->toDateString());
     }
 
     /**
@@ -137,5 +149,57 @@ class Tenant extends Model
             'total_partnership_years' => $this->total_partnership_years,
             'total_rental_value' => $this->total_rental_value,
         ];
+    }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $tenantName = $model->name ?? 'Unknown Tenant';
+
+        if ($action === 'created') {
+            return "Membuat tenant \"{$tenantName}\"";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus tenant \"{$tenantName}\"";
+        }
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            $original = $model->getOriginal();
+            unset($changes['updated_at']);
+
+            if (empty($changes)) {
+                return "Mengubah tenant \"{$tenantName}\"";
+            }
+
+            if (count($changes) === 1) {
+                $key = array_key_first($changes);
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                $newValue = $changes[$key] ?? 'kosong';
+                if ($newValue === '') $newValue = 'kosong';
+                
+                return "Mengubah \"{$key}\" pada tenant \"{$tenantName}\" dari \"{$oldValue}\" menjadi \"{$newValue}\"";
+            }
+
+            $descriptions = [];
+            foreach ($changes as $key => $newValue) {
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                
+                $newValueStr = $newValue ?? 'kosong';
+                if ($newValueStr === '') $newValueStr = 'kosong';
+                
+                $descriptions[] = "\"{$key}\" dari \"{$oldValue}\" menjadi \"{$newValueStr}\"";
+            }
+            
+            $changesString = implode(', ', $descriptions);
+            return "Mengubah {$changesString} pada tenant \"{$tenantName}\"";
+        }
+
+        return "{$action} tenant \"{$tenantName}\"";
     }
 }

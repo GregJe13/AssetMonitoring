@@ -16,15 +16,15 @@ class ContractController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_pks', 'like', "%{$search}%")
-                  ->orWhere('no_bak', 'like', "%{$search}%")
-                  ->orWhereHas('tenant', function($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('no_bak', 'like', "%{$search}%")
+                    ->orWhereHas('tenant', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         $activeContracts = (clone $query)->where('end_date', '>=', now()->startOfDay())
             ->orderBy('end_date')
             ->paginate(10, ['*'], 'active_page');
@@ -42,7 +42,7 @@ class ContractController extends Controller
     {
         $selectedTenantId = $request->query('tenant_id');
         $tenants = Tenant::orderBy('name')->get();
-        
+
         // Show ALL assets - partial rental allows any asset with available space
         $assets = Asset::orderBy('name')->get();
 
@@ -61,6 +61,7 @@ class ContractController extends Controller
 
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
+            'contract_type' => 'required|in:sewa,ksu',
             // PKS fields - if no_pks filled, date_pks and file_pks required
             'no_pks' => 'nullable|string|unique:contracts,no_pks',
             'date_pks' => 'required_with:no_pks|nullable|date',
@@ -71,9 +72,10 @@ class ContractController extends Controller
             'file_bak' => 'required_with:no_bak|nullable|file|mimes:pdf|max:10240',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'total_rental_value' => 'required|numeric|min:0',
+            // Sewa fields (required only if sewa)
+            'total_rental_value' => 'required_if:contract_type,sewa|nullable|numeric|min:0',
             'security_deposit' => 'nullable|numeric|min:0',
-            'payment_type' => 'required|in:upfront,interval,termin',
+            'payment_type' => 'required_if:contract_type,sewa|nullable|in:upfront,interval,termin',
             'payment_interval_value' => 'required_if:payment_type,interval|nullable|integer|min:1',
             'payment_interval_unit' => 'required_if:payment_type,interval|nullable|in:month,year',
             'payment_start_date' => 'nullable|date|after_or_equal:start_date|before_or_equal:end_date',
@@ -81,6 +83,10 @@ class ContractController extends Controller
             'termins' => 'required_if:payment_type,termin|nullable|array|min:1',
             'termins.*.due_date' => 'required_with:termins|date',
             'termins.*.amount_due' => 'required_with:termins|numeric|min:1',
+            // KSU fields (required only if ksu)
+            'sharing_type' => 'required_if:contract_type,ksu|nullable|in:revenue_sharing,profit_sharing',
+            'company_share_pct' => 'required_if:contract_type,ksu|nullable|numeric|min:0|max:100',
+            'tenant_share_pct' => 'required_if:contract_type,ksu|nullable|numeric|min:0|max:100',
             'pihak_pertama' => 'required|string',
             'pihak_kedua' => 'required|string',
             'asset_areas' => 'required|array|min:1',
@@ -101,6 +107,9 @@ class ContractController extends Controller
             'termins.required_if' => 'Termin data harus diisi jika tipe pembayaran adalah Termin.',
             'termins.*.due_date.required_with' => 'Tanggal jatuh tempo setiap termin wajib diisi.',
             'termins.*.amount_due.required_with' => 'Nominal setiap termin wajib diisi.',
+            'sharing_type.required_if' => 'Tipe bagi hasil wajib dipilih untuk kontrak KSU.',
+            'company_share_pct.required_if' => 'Persentase bagian perusahaan wajib diisi untuk kontrak KSU.',
+            'tenant_share_pct.required_if' => 'Persentase bagian tenant wajib diisi untuk kontrak KSU.',
         ]);
 
         // If payment_type is termin, compute total_rental_value from sum of termins
@@ -150,8 +159,8 @@ class ContractController extends Controller
         // Create contract (observer will call generatePaymentSchedule for non-termin)
         $contract = Contract::create($validated);
 
-        // For termin mode, we need to pass termins to generatePaymentSchedule
-        if ($validated['payment_type'] === 'termin' && !empty($termins)) {
+        // For sewa contracts with termin mode, pass termins to generatePaymentSchedule
+        if ($contract->isSewa() && $validated['payment_type'] === 'termin' && !empty($termins)) {
             $contract->generatePaymentSchedule($termins);
         }
 
@@ -192,6 +201,7 @@ class ContractController extends Controller
     {
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
+            'contract_type' => 'required|in:sewa,ksu',
             // PKS fields - if no_pks filled, date_pks required (file only if new upload)
             'no_pks' => 'nullable|string|unique:contracts,no_pks,' . $contract->id,
             'date_pks' => 'required_with:no_pks|nullable|date',
@@ -202,8 +212,12 @@ class ContractController extends Controller
             'file_bak' => 'nullable|file|mimes:pdf|max:10240',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'total_rental_value' => 'required|numeric|min:0',
+            'total_rental_value' => 'required_if:contract_type,sewa|nullable|numeric|min:0',
             'payment_start_date' => 'nullable|date|after_or_equal:start_date|before_or_equal:end_date',
+            // KSU fields
+            'sharing_type' => 'required_if:contract_type,ksu|nullable|in:revenue_sharing,profit_sharing',
+            'company_share_pct' => 'required_if:contract_type,ksu|nullable|numeric|min:0|max:100',
+            'tenant_share_pct' => 'required_if:contract_type,ksu|nullable|numeric|min:0|max:100',
             'pihak_pertama' => 'required|string',
             'pihak_kedua' => 'required|string',
             'asset_areas' => 'array',
@@ -216,6 +230,9 @@ class ContractController extends Controller
             'file_bak.max' => 'File BAK maksimal 10MB.',
             'payment_start_date.after_or_equal' => 'Tanggal mulai pembayaran harus sama atau setelah tanggal mulai kontrak.',
             'payment_start_date.before_or_equal' => 'Tanggal mulai pembayaran tidak boleh melebihi tanggal akhir kontrak.',
+            'sharing_type.required_if' => 'Tipe bagi hasil wajib dipilih untuk kontrak KSU.',
+            'company_share_pct.required_if' => 'Persentase bagian perusahaan wajib diisi untuk kontrak KSU.',
+            'tenant_share_pct.required_if' => 'Persentase bagian tenant wajib diisi untuk kontrak KSU.',
         ]);
 
         // Custom validation: at least one of BAK or PKS must be filled
@@ -256,20 +273,23 @@ class ContractController extends Controller
             $validated['file_bak'] = $request->file('file_bak')->store('contracts', 'public');
         }
 
-        $contract->update($validated);
-
-        // Update asset attachments if provided
+        // Siapkan data perubahan asset untuk log activity sebelum update
+        $assetChangesList = [];
+        $syncData = [];
         if ($request->has('asset_areas') && !empty($request->asset_areas)) {
             // Validate available space for the contract period (excluding this contract)
             $errors = [];
             foreach ($request->asset_areas as $assetId => $requestedArea) {
                 $asset = Asset::find($assetId);
-                if (!$asset) continue;
-                
+                if (!$asset)
+                    continue;
+
                 $availableForPeriod = $asset->getAvailableAreaForPeriod(
-                    $validated['start_date'], $validated['end_date'], $contract->id
+                    $validated['start_date'],
+                    $validated['end_date'],
+                    $contract->id
                 );
-                
+
                 if ($requestedArea > $availableForPeriod) {
                     $errors["asset_areas.{$assetId}"] = "Luas yang diminta ({$requestedArea} m²) melebihi area tersedia ({$availableForPeriod} m²) untuk {$asset->name} pada periode kontrak ini.";
                 }
@@ -279,14 +299,54 @@ class ContractController extends Controller
                 return back()->withErrors($errors)->withInput();
             }
 
-            // Sync with new areas - filter out null/empty values
-            $syncData = [];
+            // Prepare sync data
             foreach ($request->asset_areas as $assetId => $rentedArea) {
-                // Only include if rented area is a valid positive number
                 if ($rentedArea !== null && $rentedArea !== '' && floatval($rentedArea) > 0) {
                     $syncData[$assetId] = ['rented_area_sqm' => floatval($rentedArea)];
                 }
             }
+
+            // Calculate differences for log
+            $oldAssets = $contract->assets->pluck('pivot.rented_area_sqm', 'id')->toArray();
+            
+            foreach ($syncData as $assetId => $data) {
+                $newArea = $data['rented_area_sqm'];
+                $oldArea = isset($oldAssets[$assetId]) ? floatval($oldAssets[$assetId]) : 0;
+                if ($oldArea !== $newArea) {
+                    $assetName = Asset::find($assetId)->name ?? "Asset #{$assetId}";
+                    if ($oldArea == 0) {
+                        $assetChangesList[] = "menambahkan asset \"{$assetName}\" dengan luas {$newArea} m²";
+                    } else {
+                        $assetChangesList[] = "mengubah luas asset \"{$assetName}\" dari {$oldArea} m² menjadi {$newArea} m²";
+                    }
+                }
+            }
+            
+            foreach ($oldAssets as $assetId => $oldArea) {
+                if (!isset($syncData[$assetId])) {
+                    $assetName = Asset::find($assetId)->name ?? "Asset #{$assetId}";
+                    $assetChangesList[] = "menghapus asset \"{$assetName}\" yang sebelumnya {$oldArea} m²";
+                }
+            }
+        }
+
+        $contract->fill($validated);
+
+        if (!empty($assetChangesList)) {
+            $contract->asset_changes_for_log = $assetChangesList;
+            if (!$contract->isDirty()) {
+                $contract->touch();
+            } else {
+                $contract->save();
+            }
+        } else {
+            if ($contract->isDirty()) {
+                $contract->save();
+            }
+        }
+
+        // Update asset attachments if provided
+        if ($request->has('asset_areas') && !empty($request->asset_areas)) {
             $contract->assets()->sync($syncData);
         }
 
@@ -305,7 +365,7 @@ class ContractController extends Controller
     public function viewFile(Contract $contract, string $type)
     {
         $fileField = 'file_' . $type;
-        
+
         if (!in_array($type, ['bak', 'pks'])) {
             abort(404, 'Invalid file type.');
         }
@@ -315,7 +375,7 @@ class ContractController extends Controller
         }
 
         $path = storage_path('app/public/' . $contract->$fileField);
-        
+
         if (!file_exists($path)) {
             abort(404, 'File not found on disk.');
         }
@@ -361,13 +421,13 @@ class ContractController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('no_pks', 'like', "%{$search}%")
-                  ->orWhere('no_bak', 'like', "%{$search}%")
-                  ->orWhereHas('tenant', function ($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('no_bak', 'like', "%{$search}%")
+                    ->orWhereHas('tenant', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         if ($tab === 'log') {
             $allContracts = $query->orderBy('end_date', 'desc')->get();
         } else {
@@ -375,7 +435,7 @@ class ContractController extends Controller
         }
 
         $html = view('contracts._grid', ['contracts' => $allContracts])->render();
-        
+
         return response()->json([
             'html' => $html,
             'count' => $allContracts->count()

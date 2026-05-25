@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Traits\LogsActivity;
 
 class Contract extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected static function booted(): void
     {
@@ -30,6 +31,7 @@ class Contract extends Model
 
     protected $fillable = [
         'tenant_id',
+        'contract_type',
         'no_bak',
         'date_bak',
         'file_bak',
@@ -40,6 +42,9 @@ class Contract extends Model
         'end_date',
         'total_rental_value',
         'security_deposit',
+        'sharing_type',
+        'company_share_pct',
+        'tenant_share_pct',
         'payment_type',
         'payment_start_date',
         'payment_interval_value',
@@ -58,8 +63,50 @@ class Contract extends Model
         'payment_start_date' => 'date',
         'total_rental_value' => 'decimal:2',
         'security_deposit' => 'decimal:2',
+        'company_share_pct' => 'decimal:2',
+        'tenant_share_pct' => 'decimal:2',
         'payment_type' => 'string',
     ];
+
+    // ==========================================
+    // SCOPES
+    // ==========================================
+
+    /**
+     * Scope: hanya kontrak sewa (fixed rental).
+     */
+    public function scopeSewa($query)
+    {
+        return $query->where('contract_type', 'sewa');
+    }
+
+    /**
+     * Scope: hanya kontrak KSU (bagi hasil).
+     */
+    public function scopeKsu($query)
+    {
+        return $query->where('contract_type', 'ksu');
+    }
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
+
+    /**
+     * Check if this is a KSU (profit-sharing) contract.
+     */
+    public function isKsu(): bool
+    {
+        return $this->contract_type === 'ksu';
+    }
+
+    /**
+     * Check if this is a sewa (fixed rental) contract.
+     */
+    public function isSewa(): bool
+    {
+        return $this->contract_type === 'sewa';
+    }
 
     /**
      * Get the tenant that owns this contract.
@@ -159,6 +206,12 @@ class Contract extends Model
      */
     public function generatePaymentSchedule(array $termins = []): void
     {
+        // KSU contracts don't have payment schedules
+        // Cash basis dicatat melalui Invoice manual dari hasil rekon
+        if ($this->isKsu()) {
+            return;
+        }
+
         // Hapus payments lama jika ada (untuk regenerate)
         $this->payments()->forceDelete();
 
@@ -240,5 +293,62 @@ class Contract extends Model
             'overdue_count' => $payments->where('payment_status', 'overdue')->count(),
             'partial_count' => $payments->where('payment_status', 'partial')->count(),
         ];
+    }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $contractName = $model->no_pks ?? $model->no_bak ?? "ID #{$model->id}";
+
+        if ($action === 'created') {
+            return "Membuat contract \"{$contractName}\"";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus contract \"{$contractName}\"";
+        }
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            $original = $model->getOriginal();
+            unset($changes['updated_at']);
+
+            $descriptions = [];
+            
+            foreach ($changes as $key => $newValue) {
+                if ($key === 'file_pks') {
+                    $descriptions[] = "memperbarui file PKS";
+                    continue;
+                }
+                if ($key === 'file_bak') {
+                    $descriptions[] = "memperbarui file BAK";
+                    continue;
+                }
+
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                
+                $newValueStr = $newValue ?? 'kosong';
+                if ($newValueStr === '') $newValueStr = 'kosong';
+                
+                $descriptions[] = "\"{$key}\" dari \"{$oldValue}\" menjadi \"{$newValueStr}\"";
+            }
+            
+            // Menambahkan log perubahan asset jika dilempar dari controller
+            if (isset($model->asset_changes_for_log) && is_array($model->asset_changes_for_log)) {
+                $descriptions = array_merge($descriptions, $model->asset_changes_for_log);
+            }
+
+            if (empty($descriptions)) {
+                return "Mengubah data contract \"{$contractName}\"";
+            }
+            
+            $changesString = implode(', ', $descriptions);
+            return "Mengubah {$changesString} pada contract \"{$contractName}\"";
+        }
+
+        return "{$action} contract \"{$contractName}\"";
     }
 }

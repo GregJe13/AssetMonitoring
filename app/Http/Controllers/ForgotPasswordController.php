@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -22,7 +23,7 @@ class ForgotPasswordController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-        
+
         return view('login.forgot-password');
     }
 
@@ -55,18 +56,27 @@ class ForgotPasswordController extends Controller
         // Get user name
         $user = User::where('email', $request->email)->first();
 
-        // Send email
-        $resetUrl = url('/reset-password/' . $token . '?email=' . urlencode($request->email));
-        
-        Mail::send('emails.reset-password', [
-            'user' => $user,
-            'resetUrl' => $resetUrl,
-        ], function ($message) use ($request) {
-            $message->to($request->email);
-            $message->subject('Reset Password - Monitoring Dashboard');
-        });
+        try {
+            // Send email
+            $resetUrl = url('/reset-password/' . $token . '?email=' . urlencode($request->email));
 
-        return back()->with('success', 'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.');
+            Mail::send('emails.reset-password', [
+                'user' => $user,
+                'resetUrl' => $resetUrl,
+            ], function ($message) use ($request) {
+                $message->to($request->email);
+                $message->subject('Reset Password - Monitoring Dashboard');
+            });
+
+            return back()->with('success', 'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.');
+        } catch (\Throwable $e) {
+            // Log the error message for debugging
+            Log::error('SMTP Error during forgot password: ' . $e->getMessage());
+            
+            // Delete token if email fails to send
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->with('error', 'Gagal mengirim email reset password. Silakan coba beberapa saat lagi.');
+        }
     }
 
     /**
@@ -75,7 +85,7 @@ class ForgotPasswordController extends Controller
     public function showResetForm(Request $request, $token)
     {
         $email = $request->query('email');
-        
+
         // Verify token exists
         $tokenRecord = DB::table('password_reset_tokens')
             ->where('email', $email)

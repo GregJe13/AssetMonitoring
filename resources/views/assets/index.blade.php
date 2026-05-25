@@ -6,11 +6,13 @@
         <h1 class="text-2xl font-semibold leading-6 text-gray-900">Assets</h1>
         <p class="mt-2 text-sm text-gray-700">Manage building assets and view their current space utilization.</p>
     </div>
+    @unless(Auth::user()->isGuest())
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <a href="{{ route('assets.create') }}" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
             Add Asset
         </a>
     </div>
+    @endunless
 </div>
 
 <div class="mt-8">

@@ -23,13 +23,13 @@ class AmendmentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('no_amendment', 'like', "%{$search}%")
-                  ->orWhereHas('contract', function ($q2) use ($search) {
-                      $q2->where('no_pks', 'like', "%{$search}%")
-                         ->orWhere('no_bak', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('contract.tenant', function ($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('contract', function ($q2) use ($search) {
+                        $q2->where('no_pks', 'like', "%{$search}%")
+                            ->orWhere('no_bak', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('contract.tenant', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 

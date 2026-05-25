@@ -1,0 +1,26 @@
+@keyframes double-click-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.double-click-loading-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.double-click-spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+    animation: double-click-spin 0.75s linear infinite;
+    flex-shrink: 0;
+}
+
+.is-double-click-locked {
+    cursor: wait;
+}

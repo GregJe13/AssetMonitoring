@@ -9,7 +9,9 @@
         <p class="mt-2 text-sm text-gray-500">Create a new rental agreement. You can rent partial areas of assets.</p>
     </div>
 
-    <form action="{{ route('contracts.store') }}" method="POST" class="space-y-6" enctype="multipart/form-data" onsubmit="return validateContractForm(event)">
+    <form action="{{ route('contracts.store') }}" method="POST" class="space-y-6" enctype="multipart/form-data" onsubmit="return validateContractForm(event)"
+          x-data="{ contractType: '{{ old('contract_type', 'sewa') }}' }"
+    >
         @csrf
 
         <!-- 1. Tenant Selection -->
@@ -48,6 +50,40 @@
                         @error('pihak_kedua') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
+            </div>
+
+            <!-- Contract Type Selection -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <label class="block text-sm font-medium leading-6 text-gray-900 mb-3">Tipe Kontrak</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors"
+                           :class="contractType === 'sewa' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600' : 'border-gray-300 hover:border-gray-400'">
+                        <input type="radio" name="contract_type" value="sewa" x-model="contractType" class="sr-only">
+                        <span class="flex flex-1 flex-col">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-5 h-5" :class="contractType === 'sewa' ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                                <span class="text-sm font-semibold" :class="contractType === 'sewa' ? 'text-indigo-900' : 'text-gray-900'">Kontrak Sewa</span>
+                            </span>
+                            <span class="mt-1 text-xs" :class="contractType === 'sewa' ? 'text-indigo-700' : 'text-gray-500'">Kontrak sewa dengan nilai tetap (fixed rental value).</span>
+                        </span>
+                    </label>
+                    <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors"
+                           :class="contractType === 'ksu' ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-600' : 'border-gray-300 hover:border-gray-400'">
+                        <input type="radio" name="contract_type" value="ksu" x-model="contractType" class="sr-only">
+                        <span class="flex flex-1 flex-col">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-5 h-5" :class="contractType === 'ksu' ? 'text-purple-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                </svg>
+                                <span class="text-sm font-semibold" :class="contractType === 'ksu' ? 'text-purple-900' : 'text-gray-900'">KSU (Bagi Hasil)</span>
+                            </span>
+                            <span class="mt-1 text-xs" :class="contractType === 'ksu' ? 'text-purple-700' : 'text-gray-500'">Kerjasama Usaha dengan sistem bagi hasil (revenue/profit sharing).</span>
+                        </span>
+                    </label>
+                </div>
+                @error('contract_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>
 
@@ -123,8 +159,8 @@
             </div>
         </div>
 
-        <!-- 3. Financials & Payment Schedule -->
-        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-6" x-data="{
+        <!-- 3. Financials & Payment Schedule (Sewa only) -->
+        <div x-show="contractType === 'sewa'" x-transition class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-6" x-data="{
             paymentType: '{{ old('payment_type', 'interval') }}',
             termins: {{ old('termins') ? json_encode(old('termins')) : '[]' }},
             addTermin() {
@@ -280,6 +316,77 @@
                 </div>
 
              </div>
+        </div>
+
+        <!-- 3b. KSU Sharing Terms (KSU only) -->
+        <div x-show="contractType === 'ksu'" x-transition x-cloak class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-6">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Ketentuan Bagi Hasil (KSU)</h3>
+            <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                
+                <!-- Sharing Type -->
+                <div class="col-span-full">
+                    <label class="block text-sm font-medium leading-6 text-gray-900 mb-3">Tipe Bagi Hasil</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" x-data="{ sharingType: '{{ old('sharing_type', 'revenue_sharing') }}' }">
+                        <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors"
+                               :class="sharingType === 'revenue_sharing' ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-600' : 'border-gray-300 hover:border-gray-400'">
+                            <input type="radio" name="sharing_type" value="revenue_sharing" x-model="sharingType" class="sr-only">
+                            <span class="flex flex-1 flex-col">
+                                <span class="text-sm font-semibold" :class="sharingType === 'revenue_sharing' ? 'text-purple-900' : 'text-gray-900'">Revenue Sharing</span>
+                                <span class="mt-1 text-xs" :class="sharingType === 'revenue_sharing' ? 'text-purple-700' : 'text-gray-500'">Bagi hasil berdasarkan pendapatan kotor (omzet).</span>
+                            </span>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors"
+                               :class="sharingType === 'profit_sharing' ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-600' : 'border-gray-300 hover:border-gray-400'">
+                            <input type="radio" name="sharing_type" value="profit_sharing" x-model="sharingType" class="sr-only">
+                            <span class="flex flex-1 flex-col">
+                                <span class="text-sm font-semibold" :class="sharingType === 'profit_sharing' ? 'text-purple-900' : 'text-gray-900'">Profit Sharing</span>
+                                <span class="mt-1 text-xs" :class="sharingType === 'profit_sharing' ? 'text-purple-700' : 'text-gray-500'">Bagi hasil berdasarkan keuntungan bersih (net profit).</span>
+                            </span>
+                        </label>
+                    </div>
+                    @error('sharing_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Company Share -->
+                <div class="sm:col-span-3">
+                    <label for="company_share_pct" class="block text-sm font-medium leading-6 text-gray-900">Bagian Perusahaan (%)</label>
+                    <div class="mt-2 relative rounded-md shadow-sm">
+                        <input type="number" name="company_share_pct" id="company_share_pct" value="{{ old('company_share_pct') }}" step="0.01" min="0" max="100" class="block w-full rounded-md border-0 py-1.5 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 sm:text-sm sm:leading-6" placeholder="e.g. 70">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <span class="text-gray-500 sm:text-sm">%</span>
+                        </div>
+                    </div>
+                    @error('company_share_pct') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Tenant Share -->
+                <div class="sm:col-span-3">
+                    <label for="tenant_share_pct" class="block text-sm font-medium leading-6 text-gray-900">Bagian Tenant (%)</label>
+                    <div class="mt-2 relative rounded-md shadow-sm">
+                        <input type="number" name="tenant_share_pct" id="tenant_share_pct" value="{{ old('tenant_share_pct') }}" step="0.01" min="0" max="100" class="block w-full rounded-md border-0 py-1.5 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 sm:text-sm sm:leading-6" placeholder="e.g. 30">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <span class="text-gray-500 sm:text-sm">%</span>
+                        </div>
+                    </div>
+                    @error('tenant_share_pct') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Info note -->
+                <div class="col-span-full">
+                    <div class="rounded-md bg-purple-50 p-3 border border-purple-200">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-xs text-purple-700">Untuk KSU, pencatatan cash basis dilakukan melalui pembuatan Invoice manual dari hasil rekonsiliasi. Tidak ada jadwal pembayaran otomatis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 4. Asset Selection with Area Input (Dynamic based on contract dates) -->

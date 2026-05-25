@@ -163,7 +163,7 @@
                                 </div>
                             @else
                                 {{-- Upload form --}}
-                                <form action="{{ route('workflow.upload', $contract) }}" method="POST" enctype="multipart/form-data" onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('button[type=submit]').innerHTML = 'Uploading...';">
+                                <form action="{{ route('workflow.upload', $contract) }}" method="POST" enctype="multipart/form-data">
                                     @csrf
                                     <div class="flex items-center gap-3">
                                         <input type="file" name="evidence_file" required

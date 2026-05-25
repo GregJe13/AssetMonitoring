@@ -8,9 +8,12 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\WorkflowController;
+use App\Http\Controllers\ActualRevenueController;
 use App\Http\Controllers\AmendmentController;
 
 use Illuminate\Support\Facades\Auth;
@@ -43,36 +46,74 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
 
 // Protected routes (require login)
 Route::middleware('auth')->group(function () {
+
+    // ─── All authenticated users (including guest) ──────────────
+    // Guest can view dashboard (read-only) and assets list/detail
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('tenants/search', [TenantController::class, 'search'])->name('tenants.search');
-    Route::resource('tenants', TenantController::class);
+    Route::get('dashboard/accrual-details', [DashboardController::class, 'accrualDetails'])->name('dashboard.accrual-details');
+    Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
     Route::get('assets/search', [AssetController::class, 'search'])->name('assets.search');
-    Route::get('contracts/search', [ContractController::class, 'search'])->name('contracts.search');
-    Route::get('contracts/assets-for-period', [ContractController::class, 'assetsForPeriod'])->name('contracts.assetsForPeriod');
-    Route::resource('assets', AssetController::class);
-    Route::resource('invoices', InvoiceController::class);
-    Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.markPaid');
-    Route::resource('contracts', ContractController::class);
-    Route::get('contracts/{contract}/file/{type}', [ContractController::class, 'viewFile'])->name('contracts.file');
-    Route::get('contracts/{contract}/print', [ContractController::class, 'print'])->name('contracts.print');
-    Route::patch('contracts/{contract}/renewal-notes', [ContractController::class, 'updateRenewalNotes'])->name('contracts.updateRenewalNotes');
-    Route::resource('payments', PaymentController::class);
+    // Note: assets/create MUST come before assets/{asset} to avoid wildcard conflict
+    Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create')->middleware('role:worker');
+    Route::get('assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
-    // Workflow routes
-    Route::get('contracts/{contract}/workflow', [WorkflowController::class, 'show'])->name('workflow.show');
-    Route::post('contracts/{contract}/workflow/start', [WorkflowController::class, 'start'])->name('workflow.start');
-    Route::post('contracts/{contract}/workflow/advance', [WorkflowController::class, 'advance'])->name('workflow.advance');
-    Route::post('contracts/{contract}/workflow/decide', [WorkflowController::class, 'decide'])->name('workflow.decide');
-    Route::post('contracts/{contract}/workflow/upload', [WorkflowController::class, 'uploadEvidence'])->name('workflow.upload');
-    Route::get('contracts/{contract}/workflow/renewal-choice', [WorkflowController::class, 'renewalChoice'])->name('workflow.renewalChoice');
+    // ─── Worker and above (full operational access) ─────────────
+    Route::middleware('role:worker')->group(function () {
+        // Tenants
+        Route::get('tenants/search', [TenantController::class, 'search'])->name('tenants.search');
+        Route::resource('tenants', TenantController::class);
 
-    // Amendment routes
-    Route::get('amendments/contracts-for-tenant/{tenant}', [AmendmentController::class, 'contractsForTenant'])->name('amendments.contractsForTenant');
-    Route::get('amendments/{amendment}/file/{type}', [AmendmentController::class, 'viewFile'])->name('amendments.file');
-    Route::resource('amendments', AmendmentController::class);
+        // Assets (edit, update, delete — index/show above for guest, create above for route order)
+        Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
+        Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
+        Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
+        Route::patch('assets/{asset}', [AssetController::class, 'update']);
+        Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
 
-    // Example: Admin-only routes (uncomment when needed)
-    // Route::middleware('role:admin')->group(function () {
-    //     Route::resource('users', UserController::class);
-    // });
+        // Contracts
+        Route::get('contracts/search', [ContractController::class, 'search'])->name('contracts.search');
+        Route::get('contracts/assets-for-period', [ContractController::class, 'assetsForPeriod'])->name('contracts.assetsForPeriod');
+        Route::resource('contracts', ContractController::class);
+        Route::get('contracts/{contract}/file/{type}', [ContractController::class, 'viewFile'])->name('contracts.file');
+        Route::get('contracts/{contract}/print', [ContractController::class, 'print'])->name('contracts.print');
+        Route::patch('contracts/{contract}/renewal-notes', [ContractController::class, 'updateRenewalNotes'])->name('contracts.updateRenewalNotes');
+
+        // Invoices
+        Route::resource('invoices', InvoiceController::class);
+        Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.markPaid');
+
+        // Payments
+        Route::resource('payments', PaymentController::class);
+
+        // Workflow
+        Route::get('contracts/{contract}/workflow', [WorkflowController::class, 'show'])->name('workflow.show');
+        Route::post('contracts/{contract}/workflow/start', [WorkflowController::class, 'start'])->name('workflow.start');
+        Route::post('contracts/{contract}/workflow/advance', [WorkflowController::class, 'advance'])->name('workflow.advance');
+        Route::post('contracts/{contract}/workflow/decide', [WorkflowController::class, 'decide'])->name('workflow.decide');
+        Route::post('contracts/{contract}/workflow/upload', [WorkflowController::class, 'uploadEvidence'])->name('workflow.upload');
+        Route::get('contracts/{contract}/workflow/renewal-choice', [WorkflowController::class, 'renewalChoice'])->name('workflow.renewalChoice');
+
+        // Amendments
+        Route::get('amendments/contracts-for-tenant/{tenant}', [AmendmentController::class, 'contractsForTenant'])->name('amendments.contractsForTenant');
+        Route::get('amendments/{amendment}/file/{type}', [AmendmentController::class, 'viewFile'])->name('amendments.file');
+        Route::resource('amendments', AmendmentController::class);
+
+        // Actual Revenue (manual input for accrual comparison)
+        Route::post('actual-revenue', [ActualRevenueController::class, 'store'])->name('actual-revenue.store');
+    });
+
+    // ─── Manager and above ──────────────────────────────────────
+    Route::middleware('role:manager')->group(function () {
+        // Activity Log
+        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+        // User Management (Manager: can assign/remove worker role)
+        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::patch('users/{user}/role', [UserManagementController::class, 'updateRole'])->name('users.updateRole');
+    });
+
+    // ─── Admin only ─────────────────────────────────────────────
+    // Admin gets all manager routes above + additional admin-specific routes
+    // (Admin-specific routes can be added here later, e.g. system settings)
 });

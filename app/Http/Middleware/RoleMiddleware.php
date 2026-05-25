@@ -17,8 +17,9 @@ class RoleMiddleware
      */
     private const ROLE_HIERARCHY = [
         'admin',    // Highest — can access everything
-        'manager',  // Can access manager + user pages
-        'user',     // Lowest — can only access user pages
+        'manager',  // Can access manager + worker + guest pages
+        'worker',   // Can access worker + guest pages
+        'guest',    // Lowest — view only (dashboard & assets)
     ];
 
     /**

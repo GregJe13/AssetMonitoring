@@ -46,7 +46,7 @@ class RegisterController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user', // Default role
+            'role' => 'guest', // Default role — view only, needs Manager approval for worker
         ]);
 
         // Auto-login after registration
