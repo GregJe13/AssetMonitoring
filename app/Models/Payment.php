@@ -6,10 +6,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\LogsActivity;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'contract_id',
@@ -66,8 +67,8 @@ class Payment extends Model
      */
     public function getIsOverdueAttribute(): bool
     {
-        return $this->due_date < now() && 
-               in_array($this->payment_status, ['pending', 'partial']);
+        return $this->due_date < now() &&
+            in_array($this->payment_status, ['pending', 'partial']);
     }
 
     /**
@@ -133,7 +134,7 @@ class Payment extends Model
     public function scopeDueWithinDays($query, int $days)
     {
         return $query->where('payment_status', 'pending')
-                     ->whereBetween('due_date', [now(), now()->addDays($days)]);
+            ->whereBetween('due_date', [now(), now()->addDays($days)]);
     }
 
     /**
@@ -142,6 +143,38 @@ class Payment extends Model
     public function scopeShouldBeOverdue($query)
     {
         return $query->where('payment_status', 'pending')
-                     ->where('due_date', '<', now());
+            ->where('due_date', '<', now());
+    }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $model->loadMissing(['contract.tenant']);
+        $tenantName = $model->contract->tenant->name ?? 'Unknown Tenant';
+        $period = $model->period_number;
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            if (isset($changes['payment_status'])) {
+                $status = $changes['payment_status'];
+                if ($status === 'paid') {
+                    return "Menekan tombol mark as paid kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
+                }
+                return "Mengubah status pembayaran menjadi {$status} kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
+            }
+            return "Mengubah data pembayaran kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
+        }
+
+        if ($action === 'created') {
+            return "Membuat jadwal pembayaran baru kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus data pembayaran kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
+        }
+
+        return "{$action} pembayaran kontrak yang dimiliki oleh tenant {$tenantName} pada periode ke #{$period}";
     }
 }

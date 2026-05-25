@@ -99,8 +99,10 @@
             <div>
                 <dt class="text-xs font-medium text-gray-500">Metode Pembayaran</dt>
                 <dd class="mt-1 text-sm text-gray-900">
-                    @if($amendment->is_upfront)
+                    @if($amendment->payment_type === 'upfront')
                         100% Dimuka
+                    @elseif($amendment->payment_type === 'termin')
+                        Termin ({{ $amendment->payments->count() }} kali)
                     @else
                         Per {{ $amendment->payment_interval_value }} {{ $amendment->payment_interval_unit === 'month' ? 'Bulan' : 'Tahun' }}
                     @endif

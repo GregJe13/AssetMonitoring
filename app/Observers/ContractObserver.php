@@ -31,7 +31,7 @@ class ContractObserver
             'start_date',
             'end_date', 
             'total_rental_value',
-            'is_upfront',
+            'payment_type',
             'payment_interval_value',
             'payment_interval_unit',
         ];

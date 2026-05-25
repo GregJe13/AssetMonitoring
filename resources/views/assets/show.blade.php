@@ -8,6 +8,7 @@
         </h2>
         <p class="mt-1 text-sm text-gray-500">{{ $asset->id_gedung }}</p>
     </div>
+    @unless(Auth::user()->isGuest())
     <div class="mt-4 flex md:ml-4 md:mt-0 gap-3">
         <form action="{{ route('assets.destroy', $asset) }}" method="POST">
             @csrf @method('DELETE')
@@ -15,6 +16,7 @@
         </form>
         <a href="{{ route('assets.edit', $asset) }}" class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Edit</a>
     </div>
+    @endunless
 </div>
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -68,7 +70,11 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-900">
+                                @unless(Auth::user()->isGuest())
                                 <a href="{{ route('tenants.show', $contract->tenant) }}" class="hover:underline">{{ $contract->tenant->name }}</a>
+                                @else
+                                {{ $contract->tenant->name }}
+                                @endunless
                             </p>
                             <p class="text-xs text-gray-500">{{ $contract->start_date->format('M Y') }} - {{ $contract->end_date->format('M Y') }}</p>
                         </div>
@@ -77,7 +83,9 @@
                                 {{ $contract->status === 'active' ? 'text-green-700 bg-green-50 ring-green-600/20' : 'text-gray-600 bg-gray-100 ring-gray-500/10' }}">
                                 {{ ucfirst($contract->status) }}
                             </span>
+                            @unless(Auth::user()->isGuest())
                             <a href="{{ route('contracts.show', $contract) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View Contract</a>
+                            @endunless
                         </div>
                     </div>
                 </li>

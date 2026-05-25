@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
+use App\Traits\LogsActivity;
 
 class Asset extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'id_gedung',
@@ -28,8 +29,8 @@ class Asset extends Model
     public function contracts(): BelongsToMany
     {
         return $this->belongsToMany(Contract::class, 'contract_assets')
-                    ->withPivot('rented_area_sqm')
-                    ->withTimestamps();
+            ->withPivot('rented_area_sqm')
+            ->withTimestamps();
     }
 
     /**
@@ -38,8 +39,8 @@ class Asset extends Model
     public function amendments(): BelongsToMany
     {
         return $this->belongsToMany(Amendment::class, 'amendment_assets')
-                    ->withPivot('rented_area_sqm')
-                    ->withTimestamps();
+            ->withPivot('rented_area_sqm')
+            ->withTimestamps();
     }
 
     /**
@@ -48,10 +49,10 @@ class Asset extends Model
     public function isCurrentlyRented(): bool
     {
         return $this->contracts()
-                    ->where('status', 'active')
-                    ->where('start_date', '<=', now())
-                    ->where('end_date', '>=', now())
-                    ->exists();
+            ->where('status', 'active')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->exists();
     }
 
     /**
@@ -60,11 +61,11 @@ class Asset extends Model
     public function currentTenant(): ?Tenant
     {
         $activeContract = $this->contracts()
-                               ->where('status', 'active')
-                               ->where('start_date', '<=', now())
-                               ->where('end_date', '>=', now())
-                               ->first();
-        
+            ->where('status', 'active')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+
         return $activeContract?->tenant;
     }
 
@@ -154,5 +155,57 @@ class Asset extends Model
             ->sum('amendment_assets.rented_area_sqm');
 
         return max(0, (float) $this->area_sqm - $contractRented - $amendmentRented);
+    }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $assetName = $model->name ?? 'Unknown Asset';
+
+        if ($action === 'created') {
+            return "Membuat asset \"{$assetName}\"";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus asset \"{$assetName}\"";
+        }
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            $original = $model->getOriginal();
+            unset($changes['updated_at']);
+
+            if (empty($changes)) {
+                return "Mengubah asset \"{$assetName}\"";
+            }
+
+            if (count($changes) === 1) {
+                $key = array_key_first($changes);
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                $newValue = $changes[$key] ?? 'kosong';
+                if ($newValue === '') $newValue = 'kosong';
+                
+                return "Mengubah \"{$key}\" pada asset \"{$assetName}\" dari \"{$oldValue}\" menjadi \"{$newValue}\"";
+            }
+
+            $descriptions = [];
+            foreach ($changes as $key => $newValue) {
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                
+                $newValueStr = $newValue ?? 'kosong';
+                if ($newValueStr === '') $newValueStr = 'kosong';
+                
+                $descriptions[] = "\"{$key}\" dari \"{$oldValue}\" menjadi \"{$newValueStr}\"";
+            }
+            
+            $changesString = implode(', ', $descriptions);
+            return "Mengubah {$changesString} pada asset \"{$assetName}\"";
+        }
+
+        return "{$action} asset \"{$assetName}\"";
     }
 }

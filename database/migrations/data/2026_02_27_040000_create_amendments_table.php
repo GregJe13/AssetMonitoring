@@ -11,6 +11,10 @@ return new class extends Migration
      * 
      * Tabel amendments menyimpan data amandemen kontrak.
      * Setiap amandemen memiliki periode, financial terms, dan dokumen sendiri.
+     * 
+     * Consolidated from:
+     * - 2026_02_27_040000_create_amendments_table.php
+     * - 2026_03_11_140000_replace_is_upfront_with_payment_type.php (payment_type ENUM)
      */
     public function up(): void
     {
@@ -33,7 +37,7 @@ return new class extends Migration
 
             // Financial terms (independen dari kontrak induk)
             $table->decimal('total_rental_value', 15, 2);
-            $table->boolean('is_upfront')->default(false);
+            $table->enum('payment_type', ['upfront', 'interval', 'termin'])->default('interval');
             $table->date('payment_start_date')->nullable();
             $table->unsignedInteger('payment_interval_value')->default(1);
             $table->enum('payment_interval_unit', ['month', 'year'])->default('month');
@@ -58,10 +62,23 @@ return new class extends Migration
             $table->index('status');
             $table->index(['new_start_date', 'new_end_date']);
         });
+
+        // Tambahkan FK constraint pada payments.amendment_id setelah tabel amendments dibuat
+        Schema::table('payments', function (Blueprint $table) {
+            $table->foreign('amendment_id')
+                  ->references('id')
+                  ->on('amendments')
+                  ->onDelete('cascade');
+        });
     }
 
     public function down(): void
     {
+        // Lepas FK dulu sebelum drop tabel amendments
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropForeign(['amendment_id']);
+        });
+
         Schema::dropIfExists('amendments');
     }
 };

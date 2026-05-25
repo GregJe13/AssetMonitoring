@@ -72,7 +72,7 @@
             <div class="flex shrink-0 border-t border-gray-200 p-4">
                 <div class="group block w-full shrink-0">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center">
+                        <a href="{{ route('profile.show') }}" class="flex min-w-0 flex-1 items-center rounded-lg p-1 -m-1 transition-colors hover:bg-gray-50">
                             <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-indigo-500 font-bold">
                                 {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
                             </div>
@@ -80,7 +80,7 @@
                                 <p class="text-sm font-medium text-gray-700">{{ Auth::user()->name }}</p>
                                 <p class="text-xs font-medium text-gray-500 capitalize">{{ Auth::user()->role }}</p>
                             </div>
-                        </div>
+                        </a>
                         <form method="POST" action="{{ route('logout') }}" class="ml-2">
                             @csrf
                             <button type="submit" title="Logout" class="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
@@ -138,26 +138,63 @@
 
         // Delete Confirmation Global Handler
         document.addEventListener('DOMContentLoaded', function () {
+            const resumeConfirmedSubmission = (form, submitter) => {
+                if (window.DoubleClickGuard?.requestConfirmedSubmit) {
+                    window.DoubleClickGuard.requestConfirmedSubmit(form, submitter);
+                    return;
+                }
+
+                form.dataset.swalConfirmed = 'true';
+
+                if (typeof form.requestSubmit === 'function') {
+                    if (submitter) {
+                        form.requestSubmit(submitter);
+                    } else {
+                        form.requestSubmit();
+                    }
+                    return;
+                }
+
+                form.submit();
+            };
+
+            const bindSwalConfirmation = (form, config) => {
+                if (!form || form.dataset.swalConfirmBound === 'true') {
+                    return;
+                }
+
+                form.dataset.swalConfirmBound = 'true';
+                form.dataset.guardMode = 'swal-confirm';
+
+                form.addEventListener('submit', function (e) {
+                    if (form.dataset.swalConfirmed === 'true') {
+                        delete form.dataset.swalConfirmed;
+                        return;
+                    }
+
+                    e.preventDefault();
+
+                    Swal.fire(config).then((result) => {
+                        if (result.isConfirmed) {
+                            resumeConfirmedSubmission(form, e.submitter);
+                        }
+                    });
+                });
+            };
+
             // Intercept all forms with method DELETE
             const deleteForms = document.querySelectorAll('form[method="POST"]');
             deleteForms.forEach(form => {
                 const methodInput = form.querySelector('input[name="_method"]');
                 if (methodInput && methodInput.value === 'DELETE') {
-                    form.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: "You won't be able to revert this!",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#4f46e5', // Indigo 600
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, delete it!'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                form.submit();
-                            }
-                        });
+                    bindSwalConfirmation(form, {
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#4f46e5', // Indigo 600
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
                     });
                 }
             });
@@ -166,20 +203,13 @@
              const markPaidForms = document.querySelectorAll('form input[value="mark_as_paid"]');
              markPaidForms.forEach(input => {
                  const form = input.closest('form');
-                 form.addEventListener('submit', function(e) {
-                     e.preventDefault();
-                     Swal.fire({
+                 bindSwalConfirmation(form, {
                         title: 'Confirm Payment?',
                         text: "Mark this invoice as PAID? Ensure funds are received.",
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#10b981', // Emerald 500
                         confirmButtonText: 'Yes, Mark Paid'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
                  });
              });
 
@@ -205,5 +235,7 @@
     </script>
     
     @stack('scripts')
+
+    <div class="hidden from-indigo-600 via-indigo-500 to-sky-500 from-emerald-600 via-teal-500 to-cyan-500 from-amber-500 via-orange-500 to-rose-500 bg-indigo-50 text-indigo-700 ring-indigo-600/20 bg-emerald-50 text-emerald-700 ring-emerald-600/20 bg-amber-50 text-amber-700 ring-amber-600/20 bg-red-50 text-red-700 ring-red-600/20"></div>
 </body>
 </html>

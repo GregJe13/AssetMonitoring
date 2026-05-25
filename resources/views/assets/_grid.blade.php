@@ -77,7 +77,11 @@
         </div>
         
         <div class="bg-gray-50 px-5 py-3 flex items-center justify-between border-t border-gray-100">
+            @unless(Auth::user()->isGuest())
             <a href="{{ route('assets.edit', $asset) }}" class="text-xs font-medium text-gray-600 hover:text-indigo-600">Edit</a>
+            @else
+            <span></span>
+            @endunless
             <a href="{{ route('assets.show', $asset) }}" class="text-xs font-medium text-gray-600 hover:text-indigo-600">History</a>
         </div>
     </div>

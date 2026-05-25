@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\LogsActivity;
 
 class Amendment extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected static function booted(): void
     {
@@ -37,7 +38,7 @@ class Amendment extends Model
         'new_start_date',
         'new_end_date',
         'total_rental_value',
-        'is_upfront',
+        'payment_type',
         'payment_start_date',
         'payment_interval_value',
         'payment_interval_unit',
@@ -63,7 +64,7 @@ class Amendment extends Model
         'date_pks' => 'date',
         'payment_start_date' => 'date',
         'total_rental_value' => 'decimal:2',
-        'is_upfront' => 'boolean',
+        'payment_type' => 'string',
     ];
 
     /**
@@ -118,16 +119,19 @@ class Amendment extends Model
 
     /**
      * Generate payment schedule for this amendment.
-     * Same logic as Contract::generatePaymentSchedule().
+     * Supports upfront, interval, and termin modes.
+     *
+     * @param array $termins  For termin mode: [{due_date, amount_due}, ...]
      */
-    public function generatePaymentSchedule(): void
+    public function generatePaymentSchedule(array $termins = []): void
     {
-        // Delete old payments for this amendment
         $this->payments()->delete();
 
         $paymentStartDate = $this->payment_start_date ?? $this->new_start_date;
+        $today = now()->startOfDay();
 
-        if ($this->is_upfront) {
+        // === UPFRONT ===
+        if ($this->payment_type === 'upfront') {
             $dueDate = $paymentStartDate;
             $this->payments()->create([
                 'contract_id' => $this->contract_id,
@@ -135,14 +139,30 @@ class Amendment extends Model
                 'due_date' => $dueDate,
                 'amount_due' => $this->total_rental_value,
                 'amount_paid' => 0,
-                'payment_status' => $dueDate < now()->startOfDay() ? 'overdue' : 'pending',
+                'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
             ]);
             return;
         }
 
+        // === TERMIN ===
+        if ($this->payment_type === 'termin') {
+            foreach ($termins as $i => $termin) {
+                $dueDate = Carbon::parse($termin['due_date']);
+                $this->payments()->create([
+                    'contract_id' => $this->contract_id,
+                    'period_number' => $i + 1,
+                    'due_date' => $dueDate,
+                    'amount_due' => $termin['amount_due'],
+                    'amount_paid' => 0,
+                    'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
+                ]);
+            }
+            return;
+        }
+
+        // === INTERVAL ===
         $startDate = Carbon::parse($paymentStartDate);
         $endDate = Carbon::parse($this->new_end_date);
-        $today = now()->startOfDay();
 
         $intervalMonths = $this->payment_interval_unit === 'year'
             ? $this->payment_interval_value * 12

@@ -109,14 +109,16 @@
                      <div class="sm:col-span-2">
                         <dt class="text-sm font-medium text-gray-500">Payment Terms</dt>
                         <dd class="mt-1 text-sm text-gray-900">
-                            @if($contract->is_upfront)
+                            @if($contract->payment_type === 'upfront')
                                 Full Payment Upfront
+                            @elseif($contract->payment_type === 'termin')
+                                Termin ({{ $contract->payments->count() }} kali)
                             @else
                                 Every {{ $contract->payment_interval_value }} {{ Str::plural($contract->payment_interval_unit, $contract->payment_interval_value) }}
                             @endif
                         </dd>
                     </div>
-                    @if(!$contract->is_upfront && $contract->payment_start_date)
+                    @if($contract->payment_type === 'interval' && $contract->payment_start_date)
                     <div class="sm:col-span-2">
                         <dt class="text-sm font-medium text-gray-500">Payment Start Date</dt>
                         <dd class="mt-1 text-sm text-gray-900">

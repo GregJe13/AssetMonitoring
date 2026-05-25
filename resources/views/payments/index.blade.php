@@ -92,7 +92,7 @@
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                 #{{ $payment->period_number }} 
-                                <span class="text-xs text-gray-400">({{ $payment->contract->no_pks ?? 'No Ref' }})</span>
+                                <span class="text-xs text-gray-400">({{ $payment->contract->no_pks ?? $payment->contract->no_bak ?? 'No Ref' }})</span>
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 {{ $payment->payment_status == 'overdue' ? 'font-bold text-red-600' : '' }}">
                                 {{ $payment->due_date->format('d M Y') }}

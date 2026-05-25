@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Traits\LogsActivity;
 
 class Contract extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected static function booted(): void
     {
@@ -30,6 +31,7 @@ class Contract extends Model
 
     protected $fillable = [
         'tenant_id',
+        'contract_type',
         'no_bak',
         'date_bak',
         'file_bak',
@@ -40,7 +42,10 @@ class Contract extends Model
         'end_date',
         'total_rental_value',
         'security_deposit',
-        'is_upfront',
+        'sharing_type',
+        'company_share_pct',
+        'tenant_share_pct',
+        'payment_type',
         'payment_start_date',
         'payment_interval_value',
         'payment_interval_unit',
@@ -58,8 +63,50 @@ class Contract extends Model
         'payment_start_date' => 'date',
         'total_rental_value' => 'decimal:2',
         'security_deposit' => 'decimal:2',
-        'is_upfront' => 'boolean',
+        'company_share_pct' => 'decimal:2',
+        'tenant_share_pct' => 'decimal:2',
+        'payment_type' => 'string',
     ];
+
+    // ==========================================
+    // SCOPES
+    // ==========================================
+
+    /**
+     * Scope: hanya kontrak sewa (fixed rental).
+     */
+    public function scopeSewa($query)
+    {
+        return $query->where('contract_type', 'sewa');
+    }
+
+    /**
+     * Scope: hanya kontrak KSU (bagi hasil).
+     */
+    public function scopeKsu($query)
+    {
+        return $query->where('contract_type', 'ksu');
+    }
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
+
+    /**
+     * Check if this is a KSU (profit-sharing) contract.
+     */
+    public function isKsu(): bool
+    {
+        return $this->contract_type === 'ksu';
+    }
+
+    /**
+     * Check if this is a sewa (fixed rental) contract.
+     */
+    public function isSewa(): bool
+    {
+        return $this->contract_type === 'sewa';
+    }
 
     /**
      * Get the tenant that owns this contract.
@@ -151,65 +198,73 @@ class Contract extends Model
      * Generate payment schedule when contract is created.
      * 
      * Logika:
-     * - Jika is_upfront = true → buat 1 record pembayaran dengan due_date = start_date
-     * - Jika is_upfront = false → hitung jumlah periode berdasarkan interval, 
-     *   buat record pembayaran untuk setiap periode
+     * - payment_type = 'upfront'  → 1 record, bayar 100% dimuka
+     * - payment_type = 'interval' → hitung periode berdasarkan interval
+     * - payment_type = 'termin'   → N record sesuai input user (array of {due_date, amount_due})
      * 
-     * Note: Menggunakan payment_start_date jika diisi, jika tidak menggunakan start_date
+     * @param array $termins  Untuk mode termin: [{due_date, amount_due}, ...]
      */
-    public function generatePaymentSchedule(): void
+    public function generatePaymentSchedule(array $termins = []): void
     {
+        // KSU contracts don't have payment schedules
+        // Cash basis dicatat melalui Invoice manual dari hasil rekon
+        if ($this->isKsu()) {
+            return;
+        }
+
         // Hapus payments lama jika ada (untuk regenerate)
         $this->payments()->forceDelete();
 
-        // Gunakan payment_start_date jika ada, jika tidak gunakan start_date
         $paymentStartDate = $this->payment_start_date ?? $this->start_date;
+        $today = now()->startOfDay();
 
-        if ($this->is_upfront) {
-            // Bayar 100% dimuka - hanya 1 record
+        // === UPFRONT ===
+        if ($this->payment_type === 'upfront') {
             $dueDate = $paymentStartDate;
             $this->payments()->create([
                 'period_number' => 0,
                 'due_date' => $dueDate,
                 'amount_due' => $this->total_rental_value,
                 'amount_paid' => 0,
-                'payment_status' => $dueDate < now()->startOfDay() ? 'overdue' : 'pending',
+                'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
             ]);
             return;
         }
 
-        // Hitung jumlah periode berdasarkan interval
+        // === TERMIN ===
+        if ($this->payment_type === 'termin') {
+            foreach ($termins as $i => $termin) {
+                $dueDate = Carbon::parse($termin['due_date']);
+                $this->payments()->create([
+                    'period_number' => $i + 1,
+                    'due_date' => $dueDate,
+                    'amount_due' => $termin['amount_due'],
+                    'amount_paid' => 0,
+                    'payment_status' => $dueDate < $today ? 'overdue' : 'pending',
+                ]);
+            }
+            return;
+        }
+
+        // === INTERVAL (default) ===
         $startDate = Carbon::parse($paymentStartDate);
         $endDate = Carbon::parse($this->end_date);
-        $today = now()->startOfDay();
 
-        // Konversi interval ke bulan
         $intervalMonths = $this->payment_interval_unit === 'year'
             ? $this->payment_interval_value * 12
             : $this->payment_interval_value;
 
-        // Hitung total bulan kontrak dan jumlah periode
         $totalMonths = $startDate->diffInMonths($endDate);
         $periodCount = max(1, (int) ceil($totalMonths / $intervalMonths));
-        
-        // Hitung amount per periode
         $amountPerPeriod = round($this->total_rental_value / $periodCount, 2);
-        
-        // Handle pembulatan agar total tetap akurat
         $totalAllocated = 0;
 
-        // Generate payment records
         for ($i = 0; $i < $periodCount; $i++) {
             $dueDate = $startDate->copy()->addMonths($i * $intervalMonths);
-            
-            // Untuk periode terakhir, sesuaikan amount agar total pas
             $amount = ($i === $periodCount - 1)
                 ? $this->total_rental_value - $totalAllocated
                 : $amountPerPeriod;
-            
             $totalAllocated += $amount;
-
-            // Set status: overdue jika due_date sudah lewat
             $status = $dueDate < $today ? 'overdue' : 'pending';
 
             $this->payments()->create([
@@ -238,5 +293,62 @@ class Contract extends Model
             'overdue_count' => $payments->where('payment_status', 'overdue')->count(),
             'partial_count' => $payments->where('payment_status', 'partial')->count(),
         ];
+    }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $contractName = $model->no_pks ?? $model->no_bak ?? "ID #{$model->id}";
+
+        if ($action === 'created') {
+            return "Membuat contract \"{$contractName}\"";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus contract \"{$contractName}\"";
+        }
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            $original = $model->getOriginal();
+            unset($changes['updated_at']);
+
+            $descriptions = [];
+            
+            foreach ($changes as $key => $newValue) {
+                if ($key === 'file_pks') {
+                    $descriptions[] = "memperbarui file PKS";
+                    continue;
+                }
+                if ($key === 'file_bak') {
+                    $descriptions[] = "memperbarui file BAK";
+                    continue;
+                }
+
+                $oldValue = $original[$key] ?? 'kosong';
+                if ($oldValue === '') $oldValue = 'kosong';
+                
+                $newValueStr = $newValue ?? 'kosong';
+                if ($newValueStr === '') $newValueStr = 'kosong';
+                
+                $descriptions[] = "\"{$key}\" dari \"{$oldValue}\" menjadi \"{$newValueStr}\"";
+            }
+            
+            // Menambahkan log perubahan asset jika dilempar dari controller
+            if (isset($model->asset_changes_for_log) && is_array($model->asset_changes_for_log)) {
+                $descriptions = array_merge($descriptions, $model->asset_changes_for_log);
+            }
+
+            if (empty($descriptions)) {
+                return "Mengubah data contract \"{$contractName}\"";
+            }
+            
+            $changesString = implode(', ', $descriptions);
+            return "Mengubah {$changesString} pada contract \"{$contractName}\"";
+        }
+
+        return "{$action} contract \"{$contractName}\"";
     }
 }

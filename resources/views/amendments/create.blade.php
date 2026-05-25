@@ -233,42 +233,123 @@
             </div>
 
             <!-- Financial Terms -->
-            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-6">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-6" x-data="{
+                paymentType: '{{ old('payment_type', 'interval') }}',
+                termins: {{ old('termins') ? json_encode(old('termins')) : '[]' }},
+                addTermin() { this.termins.push({ due_date: '', amount_due: '' }); },
+                removeTermin(i) { this.termins.splice(i, 1); },
+                get totalTermin() { return this.termins.reduce((s, t) => s + (parseFloat(t.amount_due) || 0), 0); }
+            }">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">
                     <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold mr-2">6</span>
                     Ketentuan Pembayaran
                 </h3>
                 <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-                    <div class="sm:col-span-3">
+                    <div class="sm:col-span-3" x-show="paymentType !== 'termin'">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Total Nilai Sewa</label>
                         <div class="relative mt-2">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">Rp</span>
                             <input type="number" name="total_rental_value" value="{{ old('total_rental_value') }}" step="0.01" class="pl-10 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" required>
                         </div>
                     </div>
-                    <div class="sm:col-span-3">
+                    <div class="sm:col-span-3" x-show="paymentType === 'termin'" x-cloak>
+                        <label class="block text-sm font-medium leading-6 text-gray-900">Total Nilai Sewa (Auto)</label>
+                        <div class="relative mt-2">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">Rp</span>
+                            <input type="number" name="total_rental_value" :value="totalTermin" readonly class="pl-10 block w-full rounded-md border-0 py-1.5 text-gray-900 bg-gray-50 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 cursor-not-allowed">
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">Dihitung otomatis dari total semua termin.</p>
+                    </div>
+                    <div class="sm:col-span-3" x-show="paymentType === 'interval'">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Tanggal Mulai Bayar</label>
                         <input type="date" name="payment_start_date" value="{{ old('payment_start_date') }}" class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                         <p class="text-xs text-gray-400 mt-1">Kosongkan untuk mengikuti tanggal mulai amandemen</p>
                     </div>
 
+                    <!-- Payment Type Selection -->
                     <div class="col-span-full">
-                        <div class="flex items-center">
-                            <input type="checkbox" name="is_upfront" x-model="isUpfront" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <label class="ml-3 text-sm font-medium text-gray-900">Bayar 100% Dimuka</label>
+                        <label class="block text-sm font-medium leading-6 text-gray-900 mb-3">Tipe Pembayaran</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors" :class="paymentType === 'interval' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600' : 'border-gray-300 hover:border-gray-400'">
+                                <input type="radio" name="payment_type" value="interval" x-model="paymentType" class="sr-only">
+                                <span class="flex flex-1 flex-col">
+                                    <span class="text-sm font-semibold" :class="paymentType === 'interval' ? 'text-indigo-900' : 'text-gray-900'">Interval</span>
+                                    <span class="mt-1 text-xs" :class="paymentType === 'interval' ? 'text-indigo-700' : 'text-gray-500'">Pembayaran berkala.</span>
+                                </span>
+                            </label>
+                            <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors" :class="paymentType === 'upfront' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600' : 'border-gray-300 hover:border-gray-400'">
+                                <input type="radio" name="payment_type" value="upfront" x-model="paymentType" class="sr-only">
+                                <span class="flex flex-1 flex-col">
+                                    <span class="text-sm font-semibold" :class="paymentType === 'upfront' ? 'text-indigo-900' : 'text-gray-900'">Upfront</span>
+                                    <span class="mt-1 text-xs" :class="paymentType === 'upfront' ? 'text-indigo-700' : 'text-gray-500'">Bayar 100% di muka.</span>
+                                </span>
+                            </label>
+                            <label class="relative flex cursor-pointer rounded-lg border p-4 transition-colors" :class="paymentType === 'termin' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600' : 'border-gray-300 hover:border-gray-400'">
+                                <input type="radio" name="payment_type" value="termin" x-model="paymentType" class="sr-only">
+                                <span class="flex flex-1 flex-col">
+                                    <span class="text-sm font-semibold" :class="paymentType === 'termin' ? 'text-indigo-900' : 'text-gray-900'">Termin</span>
+                                    <span class="mt-1 text-xs" :class="paymentType === 'termin' ? 'text-indigo-700' : 'text-gray-500'">Jadwal & nominal manual.</span>
+                                </span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="sm:col-span-3" x-show="!isUpfront">
+                    <div class="sm:col-span-3" x-show="paymentType === 'interval'" x-transition>
                         <label class="block text-sm font-medium leading-6 text-gray-900">Interval Pembayaran</label>
                         <input type="number" name="payment_interval_value" value="{{ old('payment_interval_value', 1) }}" min="1" class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                     </div>
-                    <div class="sm:col-span-3" x-show="!isUpfront">
+                    <div class="sm:col-span-3" x-show="paymentType === 'interval'" x-transition>
                         <label class="block text-sm font-medium leading-6 text-gray-900">Unit Interval</label>
                         <select name="payment_interval_unit" class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                             <option value="month" {{ old('payment_interval_unit') === 'month' ? 'selected' : '' }}>Bulan</option>
                             <option value="year" {{ old('payment_interval_unit') === 'year' ? 'selected' : '' }}>Tahun</option>
                         </select>
+                    </div>
+
+                    <!-- Termin Builder -->
+                    <div class="col-span-full" x-show="paymentType === 'termin'" x-transition x-cloak>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-sm font-semibold text-gray-900">Daftar Termin</h4>
+                                <button type="button" @click="addTermin()" class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-600 ring-1 ring-inset ring-indigo-200 hover:bg-indigo-100 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Tambah Termin
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                <template x-for="(termin, index) in termins" :key="index">
+                                    <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex-shrink-0" x-text="index + 1"></span>
+                                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Jatuh Tempo</label>
+                                                <input type="date" :name="'termins[' + index + '][due_date]'" x-model="termin.due_date" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-500 mb-1">Nominal (Rp)</label>
+                                                <div class="relative rounded-md shadow-sm">
+                                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                                        <span class="text-gray-500 sm:text-xs">Rp</span>
+                                                    </div>
+                                                    <input type="number" :name="'termins[' + index + '][amount_due]'" x-model="termin.amount_due" min="1" required class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" @click="removeTermin(index)" class="flex-shrink-0 rounded-md p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="termins.length === 0" class="text-center py-6 text-sm text-gray-400">
+                                Belum ada termin. Klik "Tambah Termin" untuk menambahkan.
+                            </div>
+                            <div x-show="termins.length > 0" class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+                                <span class="text-sm text-gray-600"><span x-text="termins.length"></span> termin</span>
+                                <span class="text-sm font-semibold text-gray-900">Total: Rp <span x-text="totalTermin.toLocaleString('id-ID')"></span></span>
+                            </div>
+                        </div>
+                        @error('termins') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
@@ -358,7 +439,6 @@ function amendmentForm() {
         assets: [],
         assetSearch: '',
         loadingAssets: false,
-        isUpfront: {{ old('is_upfront', false) ? 'true' : 'false' }},
 
         async init() {
             if (this.selectedTenantId) {

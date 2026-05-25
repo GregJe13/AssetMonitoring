@@ -5,25 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\LogsActivity;
 
 class ContractWorkflow extends Model
 {
+    use LogsActivity;
     /**
      * All possible workflow steps.
      * Steps with branch = null are common (before decision).
      * Steps with branch = 'A' or 'B' are branch-specific.
      */
     const STEPS = [
-        'confirmation_sent'  => ['order' => 1, 'label' => 'Surat Konfirmasi',        'branch' => null, 'file_required' => true],
-        'waiting_response'   => ['order' => 2, 'label' => 'Menunggu Jawaban',         'branch' => null, 'file_required' => true],
+        'confirmation_sent' => ['order' => 1, 'label' => 'Surat Konfirmasi', 'branch' => null, 'file_required' => true],
+        'waiting_response' => ['order' => 2, 'label' => 'Menunggu Jawaban', 'branch' => null, 'file_required' => true],
         // Branch A — Akhir Kontrak
-        'response_end'       => ['order' => 3, 'label' => 'Jawaban: Akhir',           'branch' => 'A',  'file_required' => false],
-        'closed'             => ['order' => 4, 'label' => 'Closed Contract',          'branch' => 'A',  'file_required' => false],
+        'response_end' => ['order' => 3, 'label' => 'Jawaban: Akhir', 'branch' => 'A', 'file_required' => false],
+        'closed' => ['order' => 4, 'label' => 'Closed Contract', 'branch' => 'A', 'file_required' => false],
         // Branch B — Perpanjangan
-        'response_renew'     => ['order' => 3, 'label' => 'Jawaban: Perpanjangan',    'branch' => 'B',  'file_required' => false],
-        'draft_bak'          => ['order' => 4, 'label' => 'Draft BAK',                'branch' => 'B',  'file_required' => true],
-        'sign_bak'           => ['order' => 5, 'label' => 'Sign BAK',                 'branch' => 'B',  'file_required' => true],
-        'renewed'            => ['order' => 6, 'label' => 'Perpanjangan Kontrak',     'branch' => 'B',  'file_required' => false],
+        'response_renew' => ['order' => 3, 'label' => 'Jawaban: Perpanjangan', 'branch' => 'B', 'file_required' => false],
+        'draft_bak' => ['order' => 4, 'label' => 'Draft BAK', 'branch' => 'B', 'file_required' => true],
+        'sign_bak' => ['order' => 5, 'label' => 'Sign BAK', 'branch' => 'B', 'file_required' => true],
+        'renewed' => ['order' => 6, 'label' => 'Perpanjangan Kontrak', 'branch' => 'B', 'file_required' => false],
     ];
 
     protected $fillable = [
