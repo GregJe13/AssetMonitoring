@@ -15,6 +15,8 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\ActualRevenueController;
 use App\Http\Controllers\AmendmentController;
+use App\Http\Controllers\ExpiringContractController;
+use App\Http\Controllers\OverduePaymentController;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +53,8 @@ Route::middleware('auth')->group(function () {
     // Guest can view dashboard (read-only) and assets list/detail
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('dashboard/accrual-details', [DashboardController::class, 'accrualDetails'])->name('dashboard.accrual-details');
+    Route::get('expiring-contracts', [ExpiringContractController::class, 'index'])->name('expiring-contracts.index');
+    Route::get('overdue-payments', [OverduePaymentController::class, 'index'])->name('overdue-payments.index');
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
     Route::get('assets/search', [AssetController::class, 'search'])->name('assets.search');

@@ -458,9 +458,12 @@
 
                                 <div class="mt-4" x-show="loading">
                                     <div class="flex justify-center py-4">
-                                        <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                                         </svg>
                                     </div>
                                 </div>
@@ -471,35 +474,54 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-4 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden" x-show="!loading && !errorMsg">
+                                <div class="mt-4 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden"
+                                    x-show="!loading && !errorMsg">
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-300">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">Tipe</th>
-                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Tenant</th>
-                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">No. Kontrak / Invoice</th>
-                                                    <th scope="col" class="py-3.5 pl-3 pr-4 text-right text-xs font-semibold text-gray-900 sm:pr-6">Nilai (Rp)</th>
+                                                    <th scope="col"
+                                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
+                                                        Tipe</th>
+                                                    <th scope="col"
+                                                        class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">
+                                                        Tenant</th>
+                                                    <th scope="col"
+                                                        class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">
+                                                        No. Kontrak / Invoice</th>
+                                                    <th scope="col"
+                                                        class="py-3.5 pl-3 pr-4 text-right text-xs font-semibold text-gray-900 sm:pr-6">
+                                                        Nilai (Rp)</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200 bg-white">
                                                 <template x-for="(item, index) in details" :key="index">
                                                     <tr>
-                                                        <td class="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6" x-text="item.type"></td>
-                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500" x-text="item.tenant_name"></td>
-                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500" x-text="item.contract_number"></td>
-                                                        <td class="whitespace-nowrap py-3 pl-3 pr-4 text-xs text-gray-900 text-right font-mono sm:pr-6" x-text="formatCurrency(item.amount)"></td>
+                                                        <td class="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6"
+                                                            x-text="item.type"></td>
+                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500"
+                                                            x-text="item.tenant_name"></td>
+                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500"
+                                                            x-text="item.contract_number"></td>
+                                                        <td class="whitespace-nowrap py-3 pl-3 pr-4 text-xs text-gray-900 text-right font-mono sm:pr-6"
+                                                            x-text="formatCurrency(item.amount)"></td>
                                                     </tr>
                                                 </template>
                                                 <tr x-show="details.length === 0">
-                                                    <td colspan="4" class="py-4 text-center text-xs text-gray-500">Tidak ada data accrual pada bulan ini.</td>
+                                                    <td colspan="4" class="py-4 text-center text-xs text-gray-500">Tidak ada
+                                                        data accrual pada bulan ini.</td>
                                                 </tr>
                                             </tbody>
                                             <tfoot class="bg-gray-50" x-show="details.length > 0">
                                                 <tr>
-                                                    <th scope="row" colspan="3" class="hidden pl-6 pr-3 py-4 text-right text-sm font-semibold text-gray-900 sm:table-cell">Total</th>
-                                                    <th scope="row" class="pl-4 pr-3 py-4 text-left text-sm font-semibold text-gray-900 sm:hidden">Total</th>
-                                                    <td class="py-4 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6 font-mono" x-text="formatCurrency(totalAmount)"></td>
+                                                    <th scope="row" colspan="3"
+                                                        class="hidden pl-6 pr-3 py-4 text-right text-sm font-semibold text-gray-900 sm:table-cell">
+                                                        Total</th>
+                                                    <th scope="row"
+                                                        class="pl-4 pr-3 py-4 text-left text-sm font-semibold text-gray-900 sm:hidden">
+                                                        Total</th>
+                                                    <td class="py-4 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6 font-mono"
+                                                        x-text="formatCurrency(totalAmount)"></td>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -607,34 +629,34 @@
                                         @endif
                                     @else
                                         <div class="mt-3" x-data="{ 
-                                                                                editing: false, 
-                                                                                notes: @js($contract->renewal_notes ?? ''),
-                                                                                saving: false,
-                                                                                saved: false,
-                                                                                saveNotes() {
-                                                                                    this.saving = true;
-                                                                                    fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
-                                                                                        method: 'PATCH',
-                                                                                        headers: {
-                                                                                            'Content-Type': 'application/json',
-                                                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                                                            'Accept': 'application/json'
-                                                                                        },
-                                                                                        body: JSON.stringify({ renewal_notes: this.notes })
-                                                                                    })
-                                                                                    .then(res => res.json())
-                                                                                    .then(data => {
-                                                                                        this.saving = false;
-                                                                                        this.editing = false;
-                                                                                        this.saved = true;
-                                                                                        setTimeout(() => this.saved = false, 2000);
-                                                                                    })
-                                                                                    .catch(err => {
-                                                                                        this.saving = false;
-                                                                                        alert('Failed to save notes');
-                                                                                    });
-                                                                                }
-                                                                            }">
+                                                                                                                    editing: false, 
+                                                                                                                    notes: @js($contract->renewal_notes ?? ''),
+                                                                                                                    saving: false,
+                                                                                                                    saved: false,
+                                                                                                                    saveNotes() {
+                                                                                                                        this.saving = true;
+                                                                                                                        fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
+                                                                                                                            method: 'PATCH',
+                                                                                                                            headers: {
+                                                                                                                                'Content-Type': 'application/json',
+                                                                                                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                                                                                'Accept': 'application/json'
+                                                                                                                            },
+                                                                                                                            body: JSON.stringify({ renewal_notes: this.notes })
+                                                                                                                        })
+                                                                                                                        .then(res => res.json())
+                                                                                                                        .then(data => {
+                                                                                                                            this.saving = false;
+                                                                                                                            this.editing = false;
+                                                                                                                            this.saved = true;
+                                                                                                                            setTimeout(() => this.saved = false, 2000);
+                                                                                                                        })
+                                                                                                                        .catch(err => {
+                                                                                                                            this.saving = false;
+                                                                                                                            alert('Failed to save notes');
+                                                                                                                        });
+                                                                                                                    }
+                                                                                                                }">
                                             <template x-if="!editing">
                                                 <div @click="editing = true" class="cursor-pointer group">
                                                     <template x-if="notes && notes.trim()">
@@ -695,7 +717,7 @@
                                                             $isAtFinalStep = in_array($contract->workflow->current_step, $finalSteps);
                                                         @endphp
                                                         <a href="{{ route('workflow.show', $contract) }}" class="rounded-md px-2.5 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset transition-colors
-                                                                                                                                                       {{ $isAtFinalStep
+                                                                                                                                                                                                                                           {{ $isAtFinalStep
                                             ? 'bg-green-50 text-green-700 ring-green-300 hover:bg-green-100'
                                             : 'bg-indigo-50 text-indigo-600 ring-indigo-200 hover:bg-indigo-100' }}">
                                                             {{ $isAtFinalStep ? '✓ ' : '' }}{{ $contract->workflow->getCurrentStepLabel() }}
@@ -718,6 +740,17 @@
                         <li class="py-5 px-6 text-center text-sm text-gray-500">No contracts expiring in next 60 days.</li>
                     @endforelse
                 </ul>
+                @if($totalExpiringItems > 3)
+                    <div class="border-t border-gray-200 px-6 py-3">
+                        <a href="{{ route('expiring-contracts.index') }}"
+                            class="flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            See More ({{ $totalExpiringItems - 3 }} more)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <!-- Recent Overdue Payments -->
@@ -758,6 +791,17 @@
                         <li class="py-5 px-6 text-center text-sm text-gray-500">No overdue payments. Good job!</li>
                     @endforelse
                 </ul>
+                @if($totalOverduePayments > 5)
+                    <div class="border-t border-gray-200 px-6 py-3">
+                        <a href="{{ route('overdue-payments.index') }}"
+                            class="flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            See More ({{ $totalOverduePayments - 5 }} more)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <!-- Unpaid Invoices -->
@@ -923,7 +967,7 @@
                     toolbar: { show: false },
                     zoom: { enabled: false },
                     events: {
-                        dataPointSelection: function(event, chartContext, config) {
+                        dataPointSelection: function (event, chartContext, config) {
                             if (config.seriesIndex === 0) { // Accrual Basis series
                                 var monthIndex = config.dataPointIndex + 1;
                                 var year = {{ $accrualYear }};
@@ -1076,7 +1120,7 @@
                 }
             };
         }
-        
+
         // Alpine.js component for Accrual Detail Modal
         function accrualDetailModal() {
             return {
@@ -1086,12 +1130,12 @@
                 monthName: '',
                 details: [],
                 totalAmount: 0,
-                
+
                 openModal(year, month) {
                     this.showModal = true;
                     this.fetchDetails(year, month);
                 },
-                
+
                 closeModal() {
                     this.showModal = false;
                     // Reset state
@@ -1106,11 +1150,11 @@
                 formatCurrency(value) {
                     return new Intl.NumberFormat('id-ID').format(value);
                 },
-                
+
                 async fetchDetails(year, month) {
                     this.loading = true;
                     this.errorMsg = '';
-                    
+
                     try {
                         const response = await fetch(`{{ route('dashboard.accrual-details') }}?year=${year}&month=${month}`, {
                             headers: {
@@ -1118,9 +1162,9 @@
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
-                        
+
                         const data = await response.json();
-                        
+
                         if (response.ok) {
                             this.details = data.details;
                             this.monthName = data.month_name;

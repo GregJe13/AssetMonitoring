@@ -179,4 +179,44 @@ class ContractWorkflow extends Model
     {
         return self::STEPS[$this->current_step]['label'] ?? $this->current_step;
     }
+
+    /**
+     * Override activity log description.
+     */
+    protected static function buildDescription($model, string $action): string
+    {
+        $tenantName = $model->contract->tenant->name ?? 'Unknown Tenant';
+
+        if ($action === 'created') {
+            return "Memulai sop akhir kontrak milik '{$tenantName}'";
+        }
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+
+            // Prioritaskan cek branch jika ditekan tombol akhir/perpanjangan
+            if (isset($changes['branch'])) {
+                if ($changes['branch'] === 'A') {
+                    return "Memutuskan untuk akhir kontrak pada {$tenantName}";
+                } elseif ($changes['branch'] === 'B') {
+                    return "Memutuskan untuk memperpanjang kontrak {$tenantName}";
+                }
+            }
+
+            // Jika hanya step yang berubah
+            if (isset($changes['current_step'])) {
+                $stepKey = $changes['current_step'];
+                $stepLabel = self::STEPS[$stepKey]['label'] ?? $stepKey;
+                return "Melanjutkan ke step {$stepLabel}";
+            }
+
+            return "Memperbarui workflow kontrak {$tenantName}";
+        }
+
+        if ($action === 'deleted') {
+            return "Menghapus workflow kontrak {$tenantName}";
+        }
+
+        return "{$action} workflow kontrak {$tenantName}";
+    }
 }
