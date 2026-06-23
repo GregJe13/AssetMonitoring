@@ -218,18 +218,11 @@
                 <div id="revenueChart" class="w-full h-80"></div>
             </div>
 
-            <!-- Asset Status Chart -->
+            <!-- Asset Area Composition Chart -->
             <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Asset Utilization</h3>
-                <div id="assetChart" class="w-full h-64 flex items-center justify-center"></div>
-                <div class="mt-4 flex items-center justify-center gap-4 text-sm">
-                    <div class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span> Rented
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-gray-200"></span> Available
-                    </div>
-                </div>
+                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-1">Komposisi Luas Aset</h3>
+                <p class="mb-4 text-xs text-gray-500">Pembagian total luas: dipakai perusahaan, disewa tenant, dan belum dipakai (m²)</p>
+                <div id="assetAreaChart" class="w-full h-64 flex items-center justify-center"></div>
             </div>
         </div>
 
@@ -539,6 +532,27 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Deviation / Difference Chart (Aktual − Accrual) -->
+        <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 p-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                <div>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Selisih Aktual vs Accrual</h3>
+                    <p class="mt-1 text-xs text-gray-500">Deviasi bulanan: nilai positif berarti aktual melebihi accrual, negatif berarti di bawah target</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs font-medium text-gray-600">
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: #10b981;"></span>
+                        Surplus
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: #ef4444;"></span>
+                        Defisit
+                    </div>
+                </div>
+            </div>
+            <div id="deviationChart" class="w-full" style="height: 220px;"></div>
         </div>
 
 
@@ -906,59 +920,41 @@
             var revenueChart = new ApexCharts(document.querySelector("#revenueChart"), revenueOptions);
             revenueChart.render();
 
-            // Asset Utilization Chart
-            var assetOptions = {
-                series: [{{ $rentedAssetIds }}, {{ $availableAssets }}],
-                chart: {
-                    type: 'donut',
-                    height: 280,
-                    fontFamily: 'Instrument Sans, sans-serif',
-                },
-                labels: ['Rented', 'Available'],
-                colors: ['#6366f1', '#e5e7eb'], // Indigo 500, Gray 200
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            size: '75%',
-                            labels: {
-                                show: true,
-                                total: {
-                                    show: true,
-                                    label: 'Total Assets',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    color: '#374151',
-                                    formatter: function (w) {
-                                        return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                dataLabels: { enabled: false },
-                legend: { show: false },
-                tooltip: {
+            // Asset Area Composition Chart (m²: perusahaan / tenant / belum dipakai)
+            var areaUsageOptions = {
+                series: @json($areaUsageData),
+                chart: { type: 'donut', height: 280, fontFamily: 'Instrument Sans, sans-serif' },
+                labels: ['Dipakai Perusahaan', 'Dipakai Tenant', 'Belum Dipakai'],
+                colors: ['#6366f1', '#f59e0b', '#e5e7eb'],
+                legend: { position: 'bottom' },
+                dataLabels: {
                     enabled: true,
+                    formatter: function (val) { return Math.round(val) + '%'; }
+                },
+                tooltip: {
                     y: {
                         formatter: function (val) {
-                            return val + " Units"
+                            return new Intl.NumberFormat('id-ID').format(val) + ' m²';
                         }
                     }
-                }
+                },
+                noData: { text: 'Belum ada data luas' }
             };
+            var areaUsageChart = new ApexCharts(document.querySelector("#assetAreaChart"), areaUsageOptions);
+            areaUsageChart.render();
 
-            var assetChart = new ApexCharts(document.querySelector("#assetChart"), assetOptions);
-            assetChart.render();
+            // Accrual vs Actual Revenue Chart (Grouped Bar)
+            var accrualRaw = @json($accrualData);
+            var actualRaw = @json($actualData);
+            var accrualMonthLabels = @json($accrualMonths);
 
-            // Accrual vs Actual Revenue Chart
             var accrualOptions = {
                 series: [{
                     name: 'Accrual Basis',
-                    data: @json($accrualData)
+                    data: accrualRaw
                 }, {
                     name: 'Aktual (Manual)',
-                    data: @json($actualData)
+                    data: actualRaw
                 }],
                 chart: {
                     type: 'bar',
@@ -993,7 +989,7 @@
                     colors: ['transparent']
                 },
                 xaxis: {
-                    categories: @json($accrualMonths),
+                    categories: accrualMonthLabels,
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                     labels: {
@@ -1039,6 +1035,122 @@
 
             var accrualChart = new ApexCharts(document.querySelector("#accrualChart"), accrualOptions);
             accrualChart.render();
+
+            // Deviation Chart (Aktual − Accrual) — Separate section
+            var differenceData = accrualRaw.map(function (val, i) {
+                return Math.round((actualRaw[i] - val) * 100) / 100;
+            });
+
+            // Color each data point: green for positive (surplus), red for negative (deficit)
+            var deviationColors = differenceData.map(function (val) {
+                return val >= 0 ? '#10b981' : '#ef4444';
+            });
+
+            var deviationOptions = {
+                series: [{
+                    name: 'Selisih (Aktual − Accrual)',
+                    data: differenceData
+                }],
+                chart: {
+                    type: 'area',
+                    height: 220,
+                    fontFamily: 'Instrument Sans, sans-serif',
+                    toolbar: { show: false },
+                    zoom: { enabled: false }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                markers: {
+                    size: 5,
+                    strokeWidth: 2,
+                    strokeColors: '#fff',
+                    hover: { size: 7 },
+                    discrete: differenceData.map(function (val, i) {
+                        return {
+                            seriesIndex: 0,
+                            dataPointIndex: i,
+                            fillColor: val >= 0 ? '#10b981' : '#ef4444',
+                            strokeColor: '#fff',
+                            size: 5
+                        };
+                    })
+                },
+                xaxis: {
+                    categories: accrualMonthLabels,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                        style: {
+                            fontSize: '11px',
+                            colors: '#6b7280'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            var abs = Math.abs(value);
+                            var sign = value < 0 ? '-' : '';
+                            var prefix = value > 0 ? '+' : '';
+                            if (abs >= 1000000000) return prefix + sign + (abs / 1000000000).toFixed(1) + "B";
+                            if (abs >= 1000000) return prefix + sign + (abs / 1000000).toFixed(1) + "M";
+                            if (abs >= 1000) return prefix + sign + (abs / 1000).toFixed(0) + "K";
+                            return (value > 0 ? '+' : '') + value;
+                        },
+                        style: {
+                            fontSize: '11px',
+                            colors: '#6b7280'
+                        }
+                    }
+                },
+                annotations: {
+                    yaxis: [{
+                        y: 0,
+                        borderColor: '#9ca3af',
+                        strokeDashArray: 0,
+                        borderWidth: 1,
+                        label: {
+                            text: 'Break-even',
+                            position: 'left',
+                            style: {
+                                fontSize: '10px',
+                                color: '#6b7280',
+                                background: '#f9fafb',
+                                padding: { left: 6, right: 6, top: 2, bottom: 2 }
+                            }
+                        }
+                    }]
+                },
+                colors: ['#f59e0b'], // Amber line
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.05,
+                        stops: [0, 90, 100]
+                    }
+                },
+                grid: {
+                    strokeDashArray: 4,
+                    borderColor: '#e5e7eb'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            var prefix = val > 0 ? '+' : '';
+                            return prefix + 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
+                        }
+                    }
+                },
+                legend: { show: false }
+            };
+
+            var deviationChart = new ApexCharts(document.querySelector("#deviationChart"), deviationOptions);
+            deviationChart.render();
         });
 
         // Alpine.js component for Actual Revenue Modal

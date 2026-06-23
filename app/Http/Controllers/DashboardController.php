@@ -54,7 +54,7 @@ class DashboardController extends Controller
             ->distinct()
             ->pluck('asset_id');
 
-        // Rented asset IDs from amendments  
+        // Rented asset IDs from amendments
         $amendmentRentedIds = DB::table('amendment_assets')
             ->join('amendments', 'amendments.id', '=', 'amendment_assets.amendment_id')
             ->where('amendments.status', 'active')
@@ -72,16 +72,14 @@ class DashboardController extends Controller
         // Active Tenant counts by contract type
         $activeSewaTenantsCount = Tenant::whereHas(
             'contractHistory',
-            fn($q) =>
-            $q->where('status', 'active')
+            fn ($q) => $q->where('status', 'active')
                 ->where('end_date', '>=', now()->startOfDay())
                 ->where('contract_type', 'sewa')
         )->count();
 
         $activeKsuTenantsCount = Tenant::whereHas(
             'contractHistory',
-            fn($q) =>
-            $q->where('status', 'active')
+            fn ($q) => $q->where('status', 'active')
                 ->where('end_date', '>=', now()->startOfDay())
                 ->where('contract_type', 'ksu')
         )->count();
@@ -97,9 +95,9 @@ class DashboardController extends Controller
                 // Past expiry but workflow not yet done
                 $q->where('end_date', '<', now()->startOfDay())
                     ->where(function ($q2) {
-                    $q2->whereDoesntHave('workflow')
-                        ->orWhereHas('workflow', fn($wq) => $wq->whereNull('completed_at'));
-                });
+                        $q2->whereDoesntHave('workflow')
+                            ->orWhereHas('workflow', fn ($wq) => $wq->whereNull('completed_at'));
+                    });
             })
             ->count();
 
@@ -240,7 +238,7 @@ class DashboardController extends Controller
         }
 
         // Round accrual data
-        $accrualData = array_map(fn($v) => round($v, 2), $accrualData);
+        $accrualData = array_map(fn ($v) => round($v, 2), $accrualData);
 
         // --- Calculate Total Accrual for the Year ---
         $totalAccrualYtd = array_sum($accrualData);
@@ -260,6 +258,31 @@ class DashboardController extends Controller
         // 3. Asset Status
         $availableAssets = $totalAssets - $rentedAssetIds;
 
+        // 3b. Komposisi luas aset untuk pie chart (dipakai perusahaan / tenant / belum dipakai)
+        $today = now()->startOfDay();
+        $totalAreaSqm = (float) Asset::sum('area_sqm');
+        $companyUsedArea = (float) Asset::sum('company_used_area_sqm');
+
+        // Luas yang sedang disewa tenant — mirror logika Asset::getRentedAreaAttribute()
+        $contractTenantArea = (float) DB::table('contract_assets')
+            ->join('contracts', 'contracts.id', '=', 'contract_assets.contract_id')
+            ->where('contracts.status', 'active')
+            ->where('contracts.start_date', '<=', $today)
+            ->where('contracts.end_date', '>=', $today)
+            ->sum('contract_assets.rented_area_sqm');
+
+        $amendmentTenantArea = (float) DB::table('amendment_assets')
+            ->join('amendments', 'amendments.id', '=', 'amendment_assets.amendment_id')
+            ->where('amendments.status', 'active')
+            ->where('amendments.new_start_date', '<=', $today)
+            ->where('amendments.new_end_date', '>=', $today)
+            ->sum('amendment_assets.rented_area_sqm');
+
+        $tenantUsedArea = $contractTenantArea + $amendmentTenantArea;
+        $unusedArea = max(0, $totalAreaSqm - $companyUsedArea - $tenantUsedArea);
+
+        $areaUsageData = [round($companyUsedArea, 2), round($tenantUsedArea, 2), round($unusedArea, 2)];
+
         // 4. Upcoming Contract Expirations (List)
         // Case 1: still within 60-day window → always show
         // Case 2: past expiry but workflow not done → still show until workflow completed
@@ -273,9 +296,9 @@ class DashboardController extends Controller
                 // Case 2: already expired, but workflow not completed
                 $q->where('end_date', '<', now()->startOfDay())
                     ->where(function ($q2) {
-                    $q2->whereDoesntHave('workflow')
-                        ->orWhereHas('workflow', fn($wq) => $wq->whereNull('completed_at'));
-                });
+                        $q2->whereDoesntHave('workflow')
+                            ->orWhereHas('workflow', fn ($wq) => $wq->whereNull('completed_at'));
+                    });
             })
             ->orderBy('end_date', 'asc');
 
@@ -329,6 +352,7 @@ class DashboardController extends Controller
             'revenueData',
             'rentedAssetIds',
             'availableAssets',
+            'areaUsageData',
             'expiringContracts',
             'expiringAmendments',
             'pendingRenewals',
@@ -375,7 +399,7 @@ class DashboardController extends Controller
                 'type' => 'Kontrak Sewa',
                 'tenant_name' => $contract->tenant->name ?? 'Unknown',
                 'contract_number' => $contract->no_pks ?? $contract->no_bak ?? '-',
-                'amount' => round($monthlyAccrual, 2)
+                'amount' => round($monthlyAccrual, 2),
             ];
         }
 
@@ -400,7 +424,7 @@ class DashboardController extends Controller
                 'type' => 'Amandemen Sewa',
                 'tenant_name' => $amendment->contract->tenant->name ?? 'Unknown',
                 'contract_number' => $amendment->contract->no_pks ?? $amendment->contract->no_bak ?? '-',
-                'amount' => round($monthlyAccrual, 2)
+                'amount' => round($monthlyAccrual, 2),
             ];
         }
 
@@ -420,7 +444,7 @@ class DashboardController extends Controller
                 'type' => 'Invoice KSU',
                 'tenant_name' => $invoice->tenant->name ?? 'Unknown',
                 'contract_number' => $invoice->invoice_number,
-                'amount' => (float) $invoice->amount
+                'amount' => (float) $invoice->amount,
             ];
         }
 
@@ -431,7 +455,7 @@ class DashboardController extends Controller
             'month' => $month,
             'month_name' => $monthStart->translatedFormat('F Y'),
             'details' => $details,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 }

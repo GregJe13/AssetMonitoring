@@ -1,23 +1,22 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ContractController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\ForgotPasswordController;
-use App\Http\Controllers\AssetController;
-use App\Http\Controllers\TenantController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\ActualRevenueController;
 use App\Http\Controllers\AmendmentController;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpiringContractController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OverduePaymentController;
-
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\TenantController;
+use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\WorkflowController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +25,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 });
 
@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
         Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
         Route::patch('assets/{asset}', [AssetController::class, 'update']);
+        Route::patch('assets/{asset}/company-area', [AssetController::class, 'updateCompanyArea'])->name('assets.updateCompanyArea');
         Route::delete('assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
 
         // Contracts
