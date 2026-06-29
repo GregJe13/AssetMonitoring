@@ -9,7 +9,7 @@
 </div>
 
 <!-- Stats -->
-<div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-4">
+<div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
     <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500">Overdue Total</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-red-600">
@@ -26,12 +26,6 @@
         <dt class="truncate text-sm font-medium text-gray-500">Paid (This Year)</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600">
              {{ \App\Models\Payment::where('payment_status', 'paid')->whereYear('paid_at', now()->year)->count() }}
-        </dd>
-    </div>
-    <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-        <dt class="truncate text-sm font-medium text-gray-500">Unpaid Invoices</dt>
-        <dd class="mt-1 text-3xl font-semibold tracking-tight text-orange-600">
-             {{ \App\Models\Invoice::where('status', 'unpaid')->count() }}
         </dd>
     </div>
 </div>
@@ -52,7 +46,6 @@
                     <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Overdue</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                    <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
                 </select>
             </div>
             
@@ -135,31 +128,25 @@
     </div>
     @endif
 
-    {{-- Invoice Payments --}}
-    <h3 class="text-base font-semibold text-gray-900 mb-3 mt-10">Invoice Payments (Ad-Hoc)</h3>
+    {{-- Invoice Payments (Pencatatan Penerimaan) --}}
+    <h3 class="text-base font-semibold text-gray-900 mb-3 mt-10">Pencatatan Penerimaan (Invoice)</h3>
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Status</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Invoice</th>
+                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Invoice</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tenant</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tanggal</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tanggal Bayar</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Amount</th>
                             <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
                         @forelse($invoices as $invoice)
-                        <tr class="{{ $invoice->status == 'unpaid' ? 'bg-orange-50' : '' }} hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50">
                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                                    {{ ucfirst($invoice->status) }}
-                                </span>
-                            </td>
-                            <td class="whitespace-nowrap px-3 py-4 text-sm">
                                 <div class="font-medium text-gray-900">{{ $invoice->invoice_number }}</div>
                                 <div class="text-xs text-gray-400 truncate max-w-[180px]">{{ $invoice->description }}</div>
                             </td>
@@ -170,35 +157,21 @@
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {{ $invoice->invoice_date->format('d M Y') }}
-                                @if($invoice->due_date)
-                                    <div class="text-xs {{ $invoice->due_date->isPast() && $invoice->status != 'paid' ? 'text-red-500 font-semibold' : 'text-gray-400' }}">
-                                        Due: {{ $invoice->due_date->format('d M Y') }}
-                                    </div>
+                                {{ $invoice->payment_date->format('d M Y') }}
+                                @if($invoice->invoice_date)
+                                    <div class="text-xs text-gray-400">Invoice: {{ $invoice->invoice_date->format('d M Y') }}</div>
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
                                 Rp {{ number_format($invoice->amount) }}
                             </td>
-                            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex gap-2 justify-end">
-                                @if($invoice->status == 'unpaid')
-                                    <form action="{{ route('invoices.markPaid', $invoice) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="text-indigo-600 hover:text-indigo-900">Mark Paid</button>
-                                    </form>
-                                @else
-                                    @if($invoice->paid_at)
-                                        <span class="text-green-600 text-xs">Dibayar: {{ $invoice->paid_at->format('d/m/Y') }}</span>
-                                    @else
-                                        <span class="text-green-600 text-xs">Paid</span>
-                                    @endif
-                                @endif
+                            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <a href="{{ route('invoices.show', $invoice) }}" class="text-gray-500 hover:text-gray-700">View</a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-3 py-4 text-center text-sm text-gray-500">No invoices found.</td>
+                            <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-500">No invoices found.</td>
                         </tr>
                         @endforelse
                     </tbody>

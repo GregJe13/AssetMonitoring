@@ -109,13 +109,13 @@
             {{-- Dates --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                    <label for="invoice_date" class="block text-sm font-medium text-gray-900">Tanggal Invoice <span class="text-red-500">*</span></label>
-                    <input type="date" name="invoice_date" id="invoice_date" value="{{ old('invoice_date', $invoice->invoice_date->format('Y-m-d')) }}" required
+                    <label for="payment_date" class="block text-sm font-medium text-gray-900">Tanggal Bayar <span class="text-red-500">*</span></label>
+                    <input type="date" name="payment_date" id="payment_date" value="{{ old('payment_date', $invoice->payment_date->format('Y-m-d')) }}" required
                         class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
                 </div>
                 <div>
-                    <label for="due_date" class="block text-sm font-medium text-gray-900">Jatuh Tempo</label>
-                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date', $invoice->due_date?->format('Y-m-d')) }}"
+                    <label for="invoice_date" class="block text-sm font-medium text-gray-900">Tanggal Invoice Diterbitkan</label>
+                    <input type="date" name="invoice_date" id="invoice_date" value="{{ old('invoice_date', $invoice->invoice_date?->format('Y-m-d')) }}"
                         class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
                 </div>
             </div>

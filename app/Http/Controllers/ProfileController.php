@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Contract;
-use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Auth;
@@ -63,11 +62,6 @@ class ProfileController extends Controller
                 'value' => Contract::where('status', 'active')->count(),
                 'caption' => 'kerja sama yang berjalan',
             ],
-            [
-                'label' => 'Invoice unpaid',
-                'value' => Invoice::where('status', 'unpaid')->count(),
-                'caption' => 'tagihan belum lunas',
-            ],
         ];
 
         $attentionCards = [
@@ -87,14 +81,6 @@ class ProfileController extends Controller
                 'classes' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
                 'tone' => 'warning',
             ],
-            [
-                'label' => 'Invoice unpaid',
-                'value' => Invoice::where('status', 'unpaid')->count(),
-                'caption' => 'perlu penagihan / konfirmasi',
-                'href' => route('invoices.index'),
-                'classes' => 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
-                'tone' => 'info',
-            ],
         ];
 
         $quickLinks = [
@@ -110,7 +96,7 @@ class ProfileController extends Controller
             ],
             [
                 'label' => 'Cek Invoice',
-                'description' => 'Review tagihan unpaid dan status pembayaran.',
+                'description' => 'Lihat pencatatan penerimaan pembayaran.',
                 'href' => route('invoices.index'),
             ],
         ];

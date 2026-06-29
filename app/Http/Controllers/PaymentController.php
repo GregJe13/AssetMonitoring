@@ -32,10 +32,6 @@ class PaymentController extends Controller
         // Also fetch invoices for the invoice section
         $invoiceQuery = Invoice::with(['tenant', 'assets']);
 
-        if ($request->has('status') && $request->status != '') {
-            $invoiceQuery->where('status', $request->status);
-        }
-
         if ($request->has('search')) {
             $search = $request->search;
             $invoiceQuery->where(function($q) use ($search) {
@@ -45,8 +41,7 @@ class PaymentController extends Controller
             });
         }
 
-        $invoices = $invoiceQuery->orderByRaw("FIELD(status, 'unpaid', 'draft', 'paid', 'cancelled')")
-            ->orderBy('invoice_date', 'desc')
+        $invoices = $invoiceQuery->orderBy('payment_date', 'desc')
             ->paginate(10, ['*'], 'inv_page');
 
         return view('payments.index', compact('payments', 'invoices'));

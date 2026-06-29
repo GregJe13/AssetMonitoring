@@ -19,9 +19,7 @@ class Invoice extends Model
         'tenant_id',
         'tenant_name_manual',
         'invoice_date',
-        'due_date',
-        'status',
-        'paid_at',
+        'payment_date',
         'file_path',
         'file_original_name',
         'notes',
@@ -30,8 +28,7 @@ class Invoice extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'invoice_date' => 'date',
-        'due_date' => 'date',
-        'paid_at' => 'datetime',
+        'payment_date' => 'date',
     ];
 
     // ── Relationships ──
@@ -56,28 +53,5 @@ class Invoice extends Model
     public function getDisplayTenantNameAttribute(): string
     {
         return $this->tenant?->name ?? $this->tenant_name_manual ?? '-';
-    }
-
-    /**
-     * Get status badge color class.
-     */
-    public function getStatusColorAttribute(): string
-    {
-        return match ($this->status) {
-            'paid' => 'bg-green-50 text-green-700 ring-green-600/20',
-            'unpaid' => 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-            default => 'bg-gray-50 text-gray-700 ring-gray-600/20',
-        };
-    }
-
-    /**
-     * Mark invoice as paid.
-     */
-    public function markAsPaid(): void
-    {
-        $this->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
     }
 }

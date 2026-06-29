@@ -51,7 +51,7 @@
                         </div>
                         <div class="ml-4 w-0 flex-1">
                             <dl>
-                                <dt class="truncate text-sm font-medium text-gray-500">Total Revenue</dt>
+                                <dt class="truncate text-sm font-medium text-gray-500">Total Cash In</dt>
                                 <dd>
                                     <div class="text-xl font-bold font-mono text-gray-900">Rp
                                         {{ number_format($totalRevenue / 1000000, 1) }} M
@@ -68,29 +68,31 @@
                 </div>
             </div>
 
-            <!-- Occupancy -->
+            <!-- Total YTD Actual -->
             <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 lg:col-span-2">
                 <div class="p-4 px-6 pt-6">
                     <div class="flex items-center">
-                        <div class="p-2 rounded-lg bg-blue-50 text-blue-600">
+                        <div class="p-2 rounded-lg bg-teal-50 text-teal-600">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205l3 1m1.5.5l-1.5-.5M6.75 7.364V3h-3v18m3-13.636l10.5-3.819" />
+                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                             </svg>
                         </div>
                         <div class="ml-4 w-0 flex-1">
                             <dl>
-                                <dt class="truncate text-sm font-medium text-gray-500">Asset Occupancy</dt>
+                                <dt class="truncate text-sm font-medium text-gray-500">Total YTD (Aktual)</dt>
                                 <dd>
-                                    <div class="text-xl font-bold font-mono text-gray-900">{{ $occupancyRate }}%</div>
+                                    <div class="text-xl font-bold font-mono text-gray-900">Rp
+                                        {{ number_format($totalActualYtd / 1000000, 1) }} M
+                                    </div>
                                 </dd>
                             </dl>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-2">
-                    <div class="text-xs font-medium text-blue-600">
-                        {{ $rentedAssetIds }} Rented / {{ $rentedAssetIds + $availableAssets }} Total
+                    <div class="text-xs font-medium text-teal-600">
+                        Realisasi aktual Jan–Des {{ $accrualYear }}
                     </div>
                 </div>
             </div>
@@ -214,14 +216,15 @@
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <!-- Revenue Chart -->
             <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 lg:col-span-2 p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Revenue Trend</h3>
+                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Cash In Trend</h3>
                 <div id="revenueChart" class="w-full h-80"></div>
             </div>
 
             <!-- Asset Area Composition Chart -->
             <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 p-6">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 mb-1">Komposisi Luas Aset</h3>
-                <p class="mb-4 text-xs text-gray-500">Pembagian total luas: dipakai perusahaan, disewa tenant, dan belum dipakai (m²)</p>
+                <p class="mb-4 text-xs text-gray-500">Pembagian total luas: dipakai perusahaan, disewa tenant, dan belum
+                    dipakai (m²)</p>
                 <div id="assetAreaChart" class="w-full h-64 flex items-center justify-center"></div>
             </div>
         </div>
@@ -539,7 +542,8 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                 <div>
                     <h3 class="text-base font-semibold leading-6 text-gray-900">Selisih Aktual vs Accrual</h3>
-                    <p class="mt-1 text-xs text-gray-500">Deviasi bulanan: nilai positif berarti aktual melebihi accrual, negatif berarti di bawah target</p>
+                    <p class="mt-1 text-xs text-gray-500">Deviasi bulanan: nilai positif berarti aktual melebihi accrual,
+                        negatif berarti di bawah target</p>
                 </div>
                 <div class="flex items-center gap-4 text-xs font-medium text-gray-600">
                     <div class="flex items-center gap-1.5">
@@ -643,34 +647,34 @@
                                         @endif
                                     @else
                                         <div class="mt-3" x-data="{ 
-                                                                                                                    editing: false, 
-                                                                                                                    notes: @js($contract->renewal_notes ?? ''),
-                                                                                                                    saving: false,
-                                                                                                                    saved: false,
-                                                                                                                    saveNotes() {
-                                                                                                                        this.saving = true;
-                                                                                                                        fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
-                                                                                                                            method: 'PATCH',
-                                                                                                                            headers: {
-                                                                                                                                'Content-Type': 'application/json',
-                                                                                                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                                                                                                'Accept': 'application/json'
-                                                                                                                            },
-                                                                                                                            body: JSON.stringify({ renewal_notes: this.notes })
-                                                                                                                        })
-                                                                                                                        .then(res => res.json())
-                                                                                                                        .then(data => {
-                                                                                                                            this.saving = false;
-                                                                                                                            this.editing = false;
-                                                                                                                            this.saved = true;
-                                                                                                                            setTimeout(() => this.saved = false, 2000);
-                                                                                                                        })
-                                                                                                                        .catch(err => {
-                                                                                                                            this.saving = false;
-                                                                                                                            alert('Failed to save notes');
-                                                                                                                        });
-                                                                                                                    }
-                                                                                                                }">
+                                                                                                                                editing: false, 
+                                                                                                                                notes: @js($contract->renewal_notes ?? ''),
+                                                                                                                                saving: false,
+                                                                                                                                saved: false,
+                                                                                                                                saveNotes() {
+                                                                                                                                    this.saving = true;
+                                                                                                                                    fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
+                                                                                                                                        method: 'PATCH',
+                                                                                                                                        headers: {
+                                                                                                                                            'Content-Type': 'application/json',
+                                                                                                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                                                                                            'Accept': 'application/json'
+                                                                                                                                        },
+                                                                                                                                        body: JSON.stringify({ renewal_notes: this.notes })
+                                                                                                                                    })
+                                                                                                                                    .then(res => res.json())
+                                                                                                                                    .then(data => {
+                                                                                                                                        this.saving = false;
+                                                                                                                                        this.editing = false;
+                                                                                                                                        this.saved = true;
+                                                                                                                                        setTimeout(() => this.saved = false, 2000);
+                                                                                                                                    })
+                                                                                                                                    .catch(err => {
+                                                                                                                                        this.saving = false;
+                                                                                                                                        alert('Failed to save notes');
+                                                                                                                                    });
+                                                                                                                                }
+                                                                                                                            }">
                                             <template x-if="!editing">
                                                 <div @click="editing = true" class="cursor-pointer group">
                                                     <template x-if="notes && notes.trim()">
@@ -731,7 +735,7 @@
                                                             $isAtFinalStep = in_array($contract->workflow->current_step, $finalSteps);
                                                         @endphp
                                                         <a href="{{ route('workflow.show', $contract) }}" class="rounded-md px-2.5 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset transition-colors
-                                                                                                                                                                                                                                           {{ $isAtFinalStep
+                                                                                                                                                                                                                                                                       {{ $isAtFinalStep
                                             ? 'bg-green-50 text-green-700 ring-green-300 hover:bg-green-100'
                                             : 'bg-indigo-50 text-indigo-600 ring-indigo-200 hover:bg-indigo-100' }}">
                                                             {{ $isAtFinalStep ? '✓ ' : '' }}{{ $contract->workflow->getCurrentStepLabel() }}
@@ -754,11 +758,11 @@
                         <li class="py-5 px-6 text-center text-sm text-gray-500">No contracts expiring in next 60 days.</li>
                     @endforelse
                 </ul>
-                @if($totalExpiringItems > 3)
+                @if($totalExpiringContracts > 3)
                     <div class="border-t border-gray-200 px-6 py-3">
                         <a href="{{ route('expiring-contracts.index') }}"
                             class="flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
-                            See More ({{ $totalExpiringItems - 3 }} more)
+                            See More ({{ $totalExpiringContracts - 3 }} more)
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                             </svg>
@@ -818,55 +822,7 @@
                 @endif
             </div>
 
-            <!-- Unpaid Invoices -->
-            <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
-                <div class="border-b border-gray-200 px-4 py-5 sm:px-6 flex items-center justify-between">
-                    <h3 class="text-base font-semibold leading-6 text-gray-900">Unpaid Invoices</h3>
-                    @unless(Auth::user()->isGuest())
-                        <a href="{{ route('invoices.index') }}" class="text-xs text-indigo-600 hover:text-indigo-800">Lihat
-                            Semua →</a>
-                    @endunless
-                </div>
-                <ul role="list" class="divide-y divide-gray-100">
-                    @forelse($unpaidInvoices as $invoice)
-                        <li class="flex items-center justify-between gap-x-6 py-5 px-6 hover:bg-gray-50 transition-colors">
-                            <div class="min-w-0">
-                                <div class="flex items-start gap-x-3">
-                                    <p class="text-sm font-semibold leading-6 text-gray-900">{{ $invoice->display_tenant_name }}
-                                    </p>
-                                    <span
-                                        class="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                                        {{ ucfirst($invoice->status) }}
-                                    </span>
-                                </div>
-                                <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                                    <p class="whitespace-nowrap">{{ $invoice->invoice_number }}</p>
-                                </div>
-                            </div>
-                            <div class="flex flex-none items-center gap-x-4">
-                                <div class="flex flex-col items-end">
-                                    <p class="text-sm font-semibold leading-6 text-gray-900">Rp
-                                        {{ number_format($invoice->amount) }}
-                                    </p>
-                                    @if($invoice->due_date)
-                                        <p
-                                            class="text-xs leading-5 {{ $invoice->due_date->isPast() ? 'text-red-500' : 'text-gray-500' }}">
-                                            Due {{ $invoice->due_date->format('d M Y') }}</p>
-                                    @else
-                                        <p class="text-xs leading-5 text-gray-400">{{ $invoice->invoice_date->format('d M Y') }}</p>
-                                    @endif
-                                </div>
-                                @unless(Auth::user()->isGuest())
-                                    <a href="{{ route('invoices.show', $invoice) }}"
-                                        class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hidden sm:block">View</a>
-                                @endunless
-                            </div>
-                        </li>
-                    @empty
-                        <li class="py-5 px-6 text-center text-sm text-gray-500">No unpaid invoices. 🎉</li>
-                    @endforelse
-                </ul>
-            </div>
+
         </div>
     </div>
 

@@ -86,7 +86,7 @@ Route::middleware('auth')->group(function () {
 
         // Invoices
         Route::resource('invoices', InvoiceController::class);
-        Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.markPaid');
+
 
         // Payments
         Route::resource('payments', PaymentController::class);

@@ -8,9 +8,6 @@
             <h2 class="text-2xl font-bold leading-7 text-gray-900">Invoice Details</h2>
             <div class="mt-1 flex items-center gap-x-3 text-sm text-gray-500">
                 <span class="font-semibold text-gray-900">{{ $invoice->invoice_number }}</span>
-                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                    {{ ucfirst($invoice->status) }}
-                </span>
             </div>
         </div>
         <div class="mt-4 flex md:ml-4 md:mt-0 gap-3">
@@ -76,33 +73,20 @@
                     </dd>
                 </div>
                 <div class="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Tanggal Invoice</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $invoice->invoice_date->format('d M Y') }}</dd>
-                </div>
-                @if($invoice->due_date)
-                <div class="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Jatuh Tempo</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $invoice->due_date->format('d M Y') }}</dd>
-                </div>
-                @endif
-                <div class="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt class="text-sm font-medium text-gray-500">Status</dt>
-                    <dd class="mt-1 text-sm sm:col-span-2 sm:mt-0 flex items-center gap-3">
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                            {{ ucfirst($invoice->status) }}
+                    <dt class="text-sm font-medium text-gray-500">Tanggal Bayar</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ $invoice->payment_date->format('d M Y') }}
                         </span>
-                        @if($invoice->status == 'paid' && $invoice->paid_at)
-                            <span class="text-sm text-green-600">Dibayar: {{ $invoice->paid_at->format('d M Y') }}</span>
-                        @elseif($invoice->status == 'unpaid')
-                            <form action="{{ route('invoices.markPaid', $invoice) }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700 shadow-sm ring-1 ring-inset ring-green-600/20 hover:bg-green-100">
-                                    ✓ Mark as Paid
-                                </button>
-                            </form>
-                        @endif
                     </dd>
                 </div>
+                @if($invoice->invoice_date)
+                <div class="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Tanggal Invoice Diterbitkan</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $invoice->invoice_date->format('d M Y') }}</dd>
+                </div>
+                @endif
                 @if($invoice->file_path)
                 <div class="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Lampiran</dt>

@@ -5,7 +5,7 @@
     <div class="md:flex md:items-center md:justify-between mb-8">
         <div>
             <h2 class="text-2xl font-bold leading-7 text-gray-900">New Invoice</h2>
-            <p class="mt-1 text-sm text-gray-500">Buat pencatatan ad-hoc baru</p>
+            <p class="mt-1 text-sm text-gray-500">Pencatatan penerimaan pembayaran baru</p>
         </div>
         <a href="{{ route('invoices.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">← Kembali</a>
     </div>
@@ -42,7 +42,7 @@
                 <label for="description" class="block text-sm font-medium text-gray-900">Deskripsi <span class="text-red-500">*</span></label>
                 <textarea name="description" id="description" rows="3" required
                     class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    placeholder="Deskripsi penggunaan asset...">{{ old('description') }}</textarea>
+                    placeholder="Deskripsi penerimaan pembayaran...">{{ old('description') }}</textarea>
             </div>
 
             {{-- Amount --}}
@@ -112,13 +112,13 @@
             {{-- Dates --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                    <label for="invoice_date" class="block text-sm font-medium text-gray-900">Tanggal Invoice <span class="text-red-500">*</span></label>
-                    <input type="date" name="invoice_date" id="invoice_date" value="{{ old('invoice_date', date('Y-m-d')) }}" required
+                    <label for="payment_date" class="block text-sm font-medium text-gray-900">Tanggal Bayar <span class="text-red-500">*</span></label>
+                    <input type="date" name="payment_date" id="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" required
                         class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
                 </div>
                 <div>
-                    <label for="due_date" class="block text-sm font-medium text-gray-900">Jatuh Tempo</label>
-                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date') }}"
+                    <label for="invoice_date" class="block text-sm font-medium text-gray-900">Tanggal Invoice Diterbitkan</label>
+                    <input type="date" name="invoice_date" id="invoice_date" value="{{ old('invoice_date') }}"
                         class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
                 </div>
             </div>

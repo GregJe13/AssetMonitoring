@@ -35,8 +35,7 @@ class DashboardController extends Controller
             ->whereYear('paid_at', $selectedYear)
             ->sum('amount_paid');
 
-        $invoiceRevenue = Invoice::where('status', 'paid')
-            ->whereYear('invoice_date', $selectedYear)
+        $invoiceRevenue = Invoice::whereYear('payment_date', $selectedYear)
             ->sum('amount');
 
         $totalRevenue = $paymentRevenue + $invoiceRevenue;
@@ -126,12 +125,11 @@ class DashboardController extends Controller
 
         // Revenue Trend — Invoices
         $invoiceTrend = Invoice::select(
-            DB::raw('year(invoice_date) as year'),
-            DB::raw('month(invoice_date) as month'),
+            DB::raw('year(payment_date) as year'),
+            DB::raw('month(payment_date) as month'),
             DB::raw('sum(amount) as total')
         )
-            ->where('status', 'paid')
-            ->whereYear('invoice_date', $selectedYear)
+            ->whereYear('payment_date', $selectedYear)
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -219,9 +217,9 @@ class DashboardController extends Controller
             }
         }
 
-        // --- C. Kontrak KSU: revenue dari Invoice, langsung masuk ke bulan invoice_date ---
+        // --- C. Kontrak KSU: revenue dari Invoice, masuk ke bulan payment_date ---
         $ksuInvoiceTrend = Invoice::select(
-            DB::raw('MONTH(invoice_date) as month'),
+            DB::raw('MONTH(payment_date) as month'),
             DB::raw('SUM(amount) as total')
         )
             ->whereHas('tenant', function ($q) {
@@ -229,7 +227,7 @@ class DashboardController extends Controller
                     $q2->where('contract_type', 'ksu');
                 });
             })
-            ->whereYear('invoice_date', $accrualYear)
+            ->whereYear('payment_date', $accrualYear)
             ->groupBy('month')
             ->pluck('total', 'month');
 
@@ -251,6 +249,9 @@ class DashboardController extends Controller
         for ($m = 1; $m <= 12; $m++) {
             $actualData[] = (float) ($actualRevenues[$m] ?? 0);
         }
+
+        // --- Calculate Total Actual YTD (sum of manually-inputted actual values for the year) ---
+        $totalActualYtd = array_sum($actualData);
 
         // Available years for filter dropdown
         $availableYears = range($currentYear - 3, $currentYear + 1);
@@ -305,18 +306,6 @@ class DashboardController extends Controller
         $totalExpiringContracts = $expiringContractsQuery->count();
         $expiringContracts = $expiringContractsQuery->limit(3)->get();
 
-        $expiringAmendmentsQuery = Amendment::with(['contract.tenant'])
-            ->where('status', 'active')
-            ->where('new_end_date', '>=', now()->startOfDay())
-            ->where('new_end_date', '<=', now()->addDays(60))
-            ->orderBy('new_end_date', 'asc');
-
-        $totalExpiringAmendments = $expiringAmendmentsQuery->count();
-        $expiringAmendments = $expiringAmendmentsQuery->limit(3)->get();
-
-        // Combined total for "See More" link (contracts + amendments)
-        $totalExpiringItems = $totalExpiringContracts + $totalExpiringAmendments;
-
         // 4b. Pending Renewal Follow-ups (workflow selesai tapi belum buat kontrak/amandemen)
         $pendingRenewals = ContractWorkflow::with(['contract.tenant'])
             ->where('renewal_action', 'pending')
@@ -331,13 +320,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // 6. Unpaid Invoices
-        $unpaidInvoices = Invoice::with(['tenant', 'assets'])
-            ->where('status', 'unpaid')
-            ->orderBy('due_date', 'asc')
-            ->orderBy('invoice_date', 'desc')
-            ->limit(5)
-            ->get();
+
 
         return view('dashboard', compact(
             'totalRevenue',
@@ -354,19 +337,18 @@ class DashboardController extends Controller
             'availableAssets',
             'areaUsageData',
             'expiringContracts',
-            'expiringAmendments',
             'pendingRenewals',
             'recentOverdue',
             'totalExpiringContracts',
-            'totalExpiringItems',
             'totalOverduePayments',
-            'unpaidInvoices',
+
             'accrualData',
             'actualData',
             'accrualMonths',
             'accrualYear',
             'availableYears',
-            'totalAccrualYtd'
+            'totalAccrualYtd',
+            'totalActualYtd'
         ));
     }
 
@@ -435,8 +417,8 @@ class DashboardController extends Controller
                     $q2->where('contract_type', 'ksu');
                 });
             })
-            ->whereYear('invoice_date', $year)
-            ->whereMonth('invoice_date', $month)
+            ->whereYear('payment_date', $year)
+            ->whereMonth('payment_date', $month)
             ->get();
 
         foreach ($ksuInvoices as $invoice) {

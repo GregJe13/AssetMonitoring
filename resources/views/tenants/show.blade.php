@@ -197,6 +197,79 @@
                 @endforelse
             </ul>
         </div>
+
+        {{-- Invoice History --}}
+        <div class="overflow-hidden bg-white shadow sm:rounded-lg mt-6">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Invoice History</h3>
+                    <p class="mt-1 text-sm text-gray-500">Riwayat pencatatan penerimaan pembayaran.</p>
+                </div>
+                @if($invoiceHistory->count() > 0)
+                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">
+                        {{ $invoiceHistory->count() }} {{ Str::plural('invoice', $invoiceHistory->count()) }}
+                    </span>
+                @endif
+            </div>
+            <ul role="list" class="divide-y divide-gray-100">
+                @forelse($invoiceHistory as $invoice)
+                <li class="p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start justify-between gap-x-6 py-1">
+                        {{-- Left: Invoice Info --}}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start gap-x-3 mb-1">
+                                <p class="text-sm font-semibold leading-6 text-gray-900">
+                                    {{ $invoice->invoice_number }}
+                                </p>
+                            </div>
+
+                            {{-- Description --}}
+                            <p class="text-sm text-gray-600 mt-0.5">{{ $invoice->description }}</p>
+
+                            {{-- Payment Date --}}
+                            <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500 font-mono">
+                                <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Dibayar: {{ $invoice->payment_date->format('d M Y') }}
+                                @if($invoice->invoice_date)
+                                    <span class="text-gray-400">·</span>
+                                    <span class="text-gray-400 font-sans">Invoice: {{ $invoice->invoice_date->format('d M Y') }}</span>
+                                @endif
+                            </div>
+
+                            {{-- Assets --}}
+                            @if($invoice->assets->count() > 0)
+                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                @foreach($invoice->assets as $asset)
+                                    <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                        {{ $asset->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
+
+                        {{-- Right: Amount & Action --}}
+                        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                            <div class="text-sm font-bold text-gray-900">
+                                Rp {{ number_format($invoice->amount) }}
+                            </div>
+                            <a href="{{ route('invoices.show', $invoice) }}" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">Details</a>
+                        </div>
+                    </div>
+                </li>
+                @empty
+                <li class="p-6 text-center text-sm text-gray-500">Belum ada invoice untuk tenant ini.</li>
+                @endforelse
+            </ul>
+            @if($invoiceHistory->count() > 0)
+            <div class="border-t border-gray-200 px-4 py-3 sm:px-6 bg-gray-50">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-500">Total Penerimaan</span>
+                    <span class="font-bold text-emerald-600">Rp {{ number_format($invoiceHistory->sum('amount')) }}</span>
+                </div>
+            </div>
+            @endif
+        </div>
     </div>
 </div>
 @endsection
