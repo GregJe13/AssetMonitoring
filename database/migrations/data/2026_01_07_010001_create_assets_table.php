@@ -14,6 +14,7 @@ return new class extends Migration
      * Consolidated from:
      * - 2026_01_07_010001_create_assets_table.php
      * - 2026_01_13_081326_modify_building_condition_in_assets_table.php (expanded ENUM)
+     * - 2026_06_17_000000_add_company_used_area_sqm_to_assets_table.php (company_used_area_sqm)
      */
     public function up(): void
     {
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string('id_gedung')->unique();
             $table->string('name');                         // Nama/deskripsi singkat aset
             $table->decimal('area_sqm', 10, 2);             // Luas dalam meter persegi
+            $table->decimal('company_used_area_sqm', 10, 2)->default(0); // Luas (m²) yang dipakai perusahaan sendiri
             $table->enum('building_condition', [
                 'baik', 
                 'cukup', 

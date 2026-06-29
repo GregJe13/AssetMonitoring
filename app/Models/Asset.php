@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\DB;
-use App\Traits\LogsActivity;
 
 class Asset extends Model
 {
@@ -16,11 +15,13 @@ class Asset extends Model
         'id_gedung',
         'name',
         'area_sqm',
+        'company_used_area_sqm',
         'building_condition',
     ];
 
     protected $casts = [
         'area_sqm' => 'decimal:2',
+        'company_used_area_sqm' => 'decimal:2',
     ];
 
     /**
@@ -95,11 +96,20 @@ class Asset extends Model
     }
 
     /**
-     * Get available (unrented) area.
+     * Get available (unrented and not used by company) area.
      */
     public function getAvailableAreaAttribute(): float
     {
-        return max(0, (float) $this->area_sqm - $this->rented_area);
+        return max(0, (float) $this->area_sqm - $this->rented_area - (float) $this->company_used_area_sqm);
+    }
+
+    /**
+     * Get area not used by anyone (total - dipakai perusahaan - disewa tenant).
+     * Dipakai untuk pie chart komposisi luas di dashboard.
+     */
+    public function getUnusedAreaAttribute(): float
+    {
+        return max(0, (float) $this->area_sqm - (float) $this->company_used_area_sqm - $this->rented_area);
     }
 
     /**
@@ -136,6 +146,7 @@ class Asset extends Model
     /**
      * Get available area for a specific date range.
      * Checks all non-terminated contracts AND amendments that overlap with the given period.
+     * Also subtracts company_used_area_sqm so contracts cannot cause total occupancy > 100%.
      */
     public function getAvailableAreaForPeriod($startDate, $endDate, $excludeContractId = null): float
     {
@@ -144,7 +155,7 @@ class Asset extends Model
             ->where('start_date', '<=', $endDate)
             ->where('end_date', '>=', $startDate)
             ->where('status', '!=', 'terminated')
-            ->when($excludeContractId, fn($q) => $q->where('contracts.id', '!=', $excludeContractId))
+            ->when($excludeContractId, fn ($q) => $q->where('contracts.id', '!=', $excludeContractId))
             ->sum('contract_assets.rented_area_sqm');
 
         // Overlapping area from amendments
@@ -154,7 +165,7 @@ class Asset extends Model
             ->where('status', '!=', 'expired')
             ->sum('amendment_assets.rented_area_sqm');
 
-        return max(0, (float) $this->area_sqm - $contractRented - $amendmentRented);
+        return max(0, (float) $this->area_sqm - $contractRented - $amendmentRented - (float) $this->company_used_area_sqm);
     }
 
     /**
@@ -184,25 +195,34 @@ class Asset extends Model
             if (count($changes) === 1) {
                 $key = array_key_first($changes);
                 $oldValue = $original[$key] ?? 'kosong';
-                if ($oldValue === '') $oldValue = 'kosong';
+                if ($oldValue === '') {
+                    $oldValue = 'kosong';
+                }
                 $newValue = $changes[$key] ?? 'kosong';
-                if ($newValue === '') $newValue = 'kosong';
-                
+                if ($newValue === '') {
+                    $newValue = 'kosong';
+                }
+
                 return "Mengubah \"{$key}\" pada asset \"{$assetName}\" dari \"{$oldValue}\" menjadi \"{$newValue}\"";
             }
 
             $descriptions = [];
             foreach ($changes as $key => $newValue) {
                 $oldValue = $original[$key] ?? 'kosong';
-                if ($oldValue === '') $oldValue = 'kosong';
-                
+                if ($oldValue === '') {
+                    $oldValue = 'kosong';
+                }
+
                 $newValueStr = $newValue ?? 'kosong';
-                if ($newValueStr === '') $newValueStr = 'kosong';
-                
+                if ($newValueStr === '') {
+                    $newValueStr = 'kosong';
+                }
+
                 $descriptions[] = "\"{$key}\" dari \"{$oldValue}\" menjadi \"{$newValueStr}\"";
             }
-            
+
             $changesString = implode(', ', $descriptions);
+
             return "Mengubah {$changesString} pada asset \"{$assetName}\"";
         }
 

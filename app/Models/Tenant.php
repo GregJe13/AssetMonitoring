@@ -80,6 +80,14 @@ class Tenant extends Model
         return $this->hasManyThrough(Payment::class, Contract::class);
     }
 
+    /**
+     * Get all invoices for this tenant.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     // ==========================================
     // PARTNERSHIP STATISTICS (untuk log/history)
     // ==========================================

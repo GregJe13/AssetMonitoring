@@ -51,7 +51,7 @@
                         </div>
                         <div class="ml-4 w-0 flex-1">
                             <dl>
-                                <dt class="truncate text-sm font-medium text-gray-500">Total Revenue</dt>
+                                <dt class="truncate text-sm font-medium text-gray-500">Total Cash In</dt>
                                 <dd>
                                     <div class="text-xl font-bold font-mono text-gray-900">Rp
                                         {{ number_format($totalRevenue / 1000000, 1) }} M
@@ -68,29 +68,31 @@
                 </div>
             </div>
 
-            <!-- Occupancy -->
+            <!-- Total YTD Actual -->
             <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 lg:col-span-2">
                 <div class="p-4 px-6 pt-6">
                     <div class="flex items-center">
-                        <div class="p-2 rounded-lg bg-blue-50 text-blue-600">
+                        <div class="p-2 rounded-lg bg-teal-50 text-teal-600">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205l3 1m1.5.5l-1.5-.5M6.75 7.364V3h-3v18m3-13.636l10.5-3.819" />
+                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                             </svg>
                         </div>
                         <div class="ml-4 w-0 flex-1">
                             <dl>
-                                <dt class="truncate text-sm font-medium text-gray-500">Asset Occupancy</dt>
+                                <dt class="truncate text-sm font-medium text-gray-500">Total YTD (Aktual)</dt>
                                 <dd>
-                                    <div class="text-xl font-bold font-mono text-gray-900">{{ $occupancyRate }}%</div>
+                                    <div class="text-xl font-bold font-mono text-gray-900">Rp
+                                        {{ number_format($totalActualYtd / 1000000, 1) }} M
+                                    </div>
                                 </dd>
                             </dl>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-2">
-                    <div class="text-xs font-medium text-blue-600">
-                        {{ $rentedAssetIds }} Rented / {{ $rentedAssetIds + $availableAssets }} Total
+                    <div class="text-xs font-medium text-teal-600">
+                        Realisasi aktual Jan–Des {{ $accrualYear }}
                     </div>
                 </div>
             </div>
@@ -214,22 +216,16 @@
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <!-- Revenue Chart -->
             <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 lg:col-span-2 p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Revenue Trend</h3>
+                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Cash In Trend</h3>
                 <div id="revenueChart" class="w-full h-80"></div>
             </div>
 
-            <!-- Asset Status Chart -->
+            <!-- Asset Area Composition Chart -->
             <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Asset Utilization</h3>
-                <div id="assetChart" class="w-full h-64 flex items-center justify-center"></div>
-                <div class="mt-4 flex items-center justify-center gap-4 text-sm">
-                    <div class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span> Rented
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-gray-200"></span> Available
-                    </div>
-                </div>
+                <h3 class="text-base font-semibold leading-6 text-gray-900 mb-1">Komposisi Luas Aset</h3>
+                <p class="mb-4 text-xs text-gray-500">Pembagian total luas: dipakai perusahaan, disewa tenant, dan belum
+                    dipakai (m²)</p>
+                <div id="assetAreaChart" class="w-full h-64 flex items-center justify-center"></div>
             </div>
         </div>
 
@@ -458,9 +454,12 @@
 
                                 <div class="mt-4" x-show="loading">
                                     <div class="flex justify-center py-4">
-                                        <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                                         </svg>
                                     </div>
                                 </div>
@@ -471,35 +470,54 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-4 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden" x-show="!loading && !errorMsg">
+                                <div class="mt-4 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg overflow-hidden"
+                                    x-show="!loading && !errorMsg">
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-300">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">Tipe</th>
-                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Tenant</th>
-                                                    <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">No. Kontrak / Invoice</th>
-                                                    <th scope="col" class="py-3.5 pl-3 pr-4 text-right text-xs font-semibold text-gray-900 sm:pr-6">Nilai (Rp)</th>
+                                                    <th scope="col"
+                                                        class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 sm:pl-6">
+                                                        Tipe</th>
+                                                    <th scope="col"
+                                                        class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">
+                                                        Tenant</th>
+                                                    <th scope="col"
+                                                        class="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">
+                                                        No. Kontrak / Invoice</th>
+                                                    <th scope="col"
+                                                        class="py-3.5 pl-3 pr-4 text-right text-xs font-semibold text-gray-900 sm:pr-6">
+                                                        Nilai (Rp)</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200 bg-white">
                                                 <template x-for="(item, index) in details" :key="index">
                                                     <tr>
-                                                        <td class="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6" x-text="item.type"></td>
-                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500" x-text="item.tenant_name"></td>
-                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500" x-text="item.contract_number"></td>
-                                                        <td class="whitespace-nowrap py-3 pl-3 pr-4 text-xs text-gray-900 text-right font-mono sm:pr-6" x-text="formatCurrency(item.amount)"></td>
+                                                        <td class="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6"
+                                                            x-text="item.type"></td>
+                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500"
+                                                            x-text="item.tenant_name"></td>
+                                                        <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-500"
+                                                            x-text="item.contract_number"></td>
+                                                        <td class="whitespace-nowrap py-3 pl-3 pr-4 text-xs text-gray-900 text-right font-mono sm:pr-6"
+                                                            x-text="formatCurrency(item.amount)"></td>
                                                     </tr>
                                                 </template>
                                                 <tr x-show="details.length === 0">
-                                                    <td colspan="4" class="py-4 text-center text-xs text-gray-500">Tidak ada data accrual pada bulan ini.</td>
+                                                    <td colspan="4" class="py-4 text-center text-xs text-gray-500">Tidak ada
+                                                        data accrual pada bulan ini.</td>
                                                 </tr>
                                             </tbody>
                                             <tfoot class="bg-gray-50" x-show="details.length > 0">
                                                 <tr>
-                                                    <th scope="row" colspan="3" class="hidden pl-6 pr-3 py-4 text-right text-sm font-semibold text-gray-900 sm:table-cell">Total</th>
-                                                    <th scope="row" class="pl-4 pr-3 py-4 text-left text-sm font-semibold text-gray-900 sm:hidden">Total</th>
-                                                    <td class="py-4 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6 font-mono" x-text="formatCurrency(totalAmount)"></td>
+                                                    <th scope="row" colspan="3"
+                                                        class="hidden pl-6 pr-3 py-4 text-right text-sm font-semibold text-gray-900 sm:table-cell">
+                                                        Total</th>
+                                                    <th scope="row"
+                                                        class="pl-4 pr-3 py-4 text-left text-sm font-semibold text-gray-900 sm:hidden">
+                                                        Total</th>
+                                                    <td class="py-4 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6 font-mono"
+                                                        x-text="formatCurrency(totalAmount)"></td>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -517,6 +535,28 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Deviation / Difference Chart (Aktual − Accrual) -->
+        <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 p-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                <div>
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Selisih Aktual vs Accrual</h3>
+                    <p class="mt-1 text-xs text-gray-500">Deviasi bulanan: nilai positif berarti aktual melebihi accrual,
+                        negatif berarti di bawah target</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs font-medium text-gray-600">
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: #10b981;"></span>
+                        Surplus
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: #ef4444;"></span>
+                        Defisit
+                    </div>
+                </div>
+            </div>
+            <div id="deviationChart" class="w-full" style="height: 220px;"></div>
         </div>
 
 
@@ -607,34 +647,34 @@
                                         @endif
                                     @else
                                         <div class="mt-3" x-data="{ 
-                                                                                editing: false, 
-                                                                                notes: @js($contract->renewal_notes ?? ''),
-                                                                                saving: false,
-                                                                                saved: false,
-                                                                                saveNotes() {
-                                                                                    this.saving = true;
-                                                                                    fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
-                                                                                        method: 'PATCH',
-                                                                                        headers: {
-                                                                                            'Content-Type': 'application/json',
-                                                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                                                            'Accept': 'application/json'
-                                                                                        },
-                                                                                        body: JSON.stringify({ renewal_notes: this.notes })
-                                                                                    })
-                                                                                    .then(res => res.json())
-                                                                                    .then(data => {
-                                                                                        this.saving = false;
-                                                                                        this.editing = false;
-                                                                                        this.saved = true;
-                                                                                        setTimeout(() => this.saved = false, 2000);
-                                                                                    })
-                                                                                    .catch(err => {
-                                                                                        this.saving = false;
-                                                                                        alert('Failed to save notes');
-                                                                                    });
-                                                                                }
-                                                                            }">
+                                                                                                                                editing: false, 
+                                                                                                                                notes: @js($contract->renewal_notes ?? ''),
+                                                                                                                                saving: false,
+                                                                                                                                saved: false,
+                                                                                                                                saveNotes() {
+                                                                                                                                    this.saving = true;
+                                                                                                                                    fetch('{{ route('contracts.updateRenewalNotes', $contract) }}', {
+                                                                                                                                        method: 'PATCH',
+                                                                                                                                        headers: {
+                                                                                                                                            'Content-Type': 'application/json',
+                                                                                                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                                                                                            'Accept': 'application/json'
+                                                                                                                                        },
+                                                                                                                                        body: JSON.stringify({ renewal_notes: this.notes })
+                                                                                                                                    })
+                                                                                                                                    .then(res => res.json())
+                                                                                                                                    .then(data => {
+                                                                                                                                        this.saving = false;
+                                                                                                                                        this.editing = false;
+                                                                                                                                        this.saved = true;
+                                                                                                                                        setTimeout(() => this.saved = false, 2000);
+                                                                                                                                    })
+                                                                                                                                    .catch(err => {
+                                                                                                                                        this.saving = false;
+                                                                                                                                        alert('Failed to save notes');
+                                                                                                                                    });
+                                                                                                                                }
+                                                                                                                            }">
                                             <template x-if="!editing">
                                                 <div @click="editing = true" class="cursor-pointer group">
                                                     <template x-if="notes && notes.trim()">
@@ -695,7 +735,7 @@
                                                             $isAtFinalStep = in_array($contract->workflow->current_step, $finalSteps);
                                                         @endphp
                                                         <a href="{{ route('workflow.show', $contract) }}" class="rounded-md px-2.5 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset transition-colors
-                                                                                                                                                       {{ $isAtFinalStep
+                                                                                                                                                                                                                                                                       {{ $isAtFinalStep
                                             ? 'bg-green-50 text-green-700 ring-green-300 hover:bg-green-100'
                                             : 'bg-indigo-50 text-indigo-600 ring-indigo-200 hover:bg-indigo-100' }}">
                                                             {{ $isAtFinalStep ? '✓ ' : '' }}{{ $contract->workflow->getCurrentStepLabel() }}
@@ -718,6 +758,17 @@
                         <li class="py-5 px-6 text-center text-sm text-gray-500">No contracts expiring in next 60 days.</li>
                     @endforelse
                 </ul>
+                @if($totalExpiringContracts > 3)
+                    <div class="border-t border-gray-200 px-6 py-3">
+                        <a href="{{ route('expiring-contracts.index') }}"
+                            class="flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            See More ({{ $totalExpiringContracts - 3 }} more)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <!-- Recent Overdue Payments -->
@@ -758,57 +809,20 @@
                         <li class="py-5 px-6 text-center text-sm text-gray-500">No overdue payments. Good job!</li>
                     @endforelse
                 </ul>
+                @if($totalOverduePayments > 5)
+                    <div class="border-t border-gray-200 px-6 py-3">
+                        <a href="{{ route('overdue-payments.index') }}"
+                            class="flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            See More ({{ $totalOverduePayments - 5 }} more)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                @endif
             </div>
 
-            <!-- Unpaid Invoices -->
-            <div class="rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
-                <div class="border-b border-gray-200 px-4 py-5 sm:px-6 flex items-center justify-between">
-                    <h3 class="text-base font-semibold leading-6 text-gray-900">Unpaid Invoices</h3>
-                    @unless(Auth::user()->isGuest())
-                        <a href="{{ route('invoices.index') }}" class="text-xs text-indigo-600 hover:text-indigo-800">Lihat
-                            Semua →</a>
-                    @endunless
-                </div>
-                <ul role="list" class="divide-y divide-gray-100">
-                    @forelse($unpaidInvoices as $invoice)
-                        <li class="flex items-center justify-between gap-x-6 py-5 px-6 hover:bg-gray-50 transition-colors">
-                            <div class="min-w-0">
-                                <div class="flex items-start gap-x-3">
-                                    <p class="text-sm font-semibold leading-6 text-gray-900">{{ $invoice->display_tenant_name }}
-                                    </p>
-                                    <span
-                                        class="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                                        {{ ucfirst($invoice->status) }}
-                                    </span>
-                                </div>
-                                <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                                    <p class="whitespace-nowrap">{{ $invoice->invoice_number }}</p>
-                                </div>
-                            </div>
-                            <div class="flex flex-none items-center gap-x-4">
-                                <div class="flex flex-col items-end">
-                                    <p class="text-sm font-semibold leading-6 text-gray-900">Rp
-                                        {{ number_format($invoice->amount) }}
-                                    </p>
-                                    @if($invoice->due_date)
-                                        <p
-                                            class="text-xs leading-5 {{ $invoice->due_date->isPast() ? 'text-red-500' : 'text-gray-500' }}">
-                                            Due {{ $invoice->due_date->format('d M Y') }}</p>
-                                    @else
-                                        <p class="text-xs leading-5 text-gray-400">{{ $invoice->invoice_date->format('d M Y') }}</p>
-                                    @endif
-                                </div>
-                                @unless(Auth::user()->isGuest())
-                                    <a href="{{ route('invoices.show', $invoice) }}"
-                                        class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hidden sm:block">View</a>
-                                @endunless
-                            </div>
-                        </li>
-                    @empty
-                        <li class="py-5 px-6 text-center text-sm text-gray-500">No unpaid invoices. 🎉</li>
-                    @endforelse
-                </ul>
-            </div>
+
         </div>
     </div>
 
@@ -862,59 +876,41 @@
             var revenueChart = new ApexCharts(document.querySelector("#revenueChart"), revenueOptions);
             revenueChart.render();
 
-            // Asset Utilization Chart
-            var assetOptions = {
-                series: [{{ $rentedAssetIds }}, {{ $availableAssets }}],
-                chart: {
-                    type: 'donut',
-                    height: 280,
-                    fontFamily: 'Instrument Sans, sans-serif',
-                },
-                labels: ['Rented', 'Available'],
-                colors: ['#6366f1', '#e5e7eb'], // Indigo 500, Gray 200
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            size: '75%',
-                            labels: {
-                                show: true,
-                                total: {
-                                    show: true,
-                                    label: 'Total Assets',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    color: '#374151',
-                                    formatter: function (w) {
-                                        return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                dataLabels: { enabled: false },
-                legend: { show: false },
-                tooltip: {
+            // Asset Area Composition Chart (m²: perusahaan / tenant / belum dipakai)
+            var areaUsageOptions = {
+                series: @json($areaUsageData),
+                chart: { type: 'donut', height: 280, fontFamily: 'Instrument Sans, sans-serif' },
+                labels: ['Dipakai Perusahaan', 'Dipakai Tenant', 'Belum Dipakai'],
+                colors: ['#6366f1', '#f59e0b', '#e5e7eb'],
+                legend: { position: 'bottom' },
+                dataLabels: {
                     enabled: true,
+                    formatter: function (val) { return Math.round(val) + '%'; }
+                },
+                tooltip: {
                     y: {
                         formatter: function (val) {
-                            return val + " Units"
+                            return new Intl.NumberFormat('id-ID').format(val) + ' m²';
                         }
                     }
-                }
+                },
+                noData: { text: 'Belum ada data luas' }
             };
+            var areaUsageChart = new ApexCharts(document.querySelector("#assetAreaChart"), areaUsageOptions);
+            areaUsageChart.render();
 
-            var assetChart = new ApexCharts(document.querySelector("#assetChart"), assetOptions);
-            assetChart.render();
+            // Accrual vs Actual Revenue Chart (Grouped Bar)
+            var accrualRaw = @json($accrualData);
+            var actualRaw = @json($actualData);
+            var accrualMonthLabels = @json($accrualMonths);
 
-            // Accrual vs Actual Revenue Chart
             var accrualOptions = {
                 series: [{
                     name: 'Accrual Basis',
-                    data: @json($accrualData)
+                    data: accrualRaw
                 }, {
                     name: 'Aktual (Manual)',
-                    data: @json($actualData)
+                    data: actualRaw
                 }],
                 chart: {
                     type: 'bar',
@@ -923,7 +919,7 @@
                     toolbar: { show: false },
                     zoom: { enabled: false },
                     events: {
-                        dataPointSelection: function(event, chartContext, config) {
+                        dataPointSelection: function (event, chartContext, config) {
                             if (config.seriesIndex === 0) { // Accrual Basis series
                                 var monthIndex = config.dataPointIndex + 1;
                                 var year = {{ $accrualYear }};
@@ -949,7 +945,7 @@
                     colors: ['transparent']
                 },
                 xaxis: {
-                    categories: @json($accrualMonths),
+                    categories: accrualMonthLabels,
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                     labels: {
@@ -995,6 +991,122 @@
 
             var accrualChart = new ApexCharts(document.querySelector("#accrualChart"), accrualOptions);
             accrualChart.render();
+
+            // Deviation Chart (Aktual − Accrual) — Separate section
+            var differenceData = accrualRaw.map(function (val, i) {
+                return Math.round((actualRaw[i] - val) * 100) / 100;
+            });
+
+            // Color each data point: green for positive (surplus), red for negative (deficit)
+            var deviationColors = differenceData.map(function (val) {
+                return val >= 0 ? '#10b981' : '#ef4444';
+            });
+
+            var deviationOptions = {
+                series: [{
+                    name: 'Selisih (Aktual − Accrual)',
+                    data: differenceData
+                }],
+                chart: {
+                    type: 'area',
+                    height: 220,
+                    fontFamily: 'Instrument Sans, sans-serif',
+                    toolbar: { show: false },
+                    zoom: { enabled: false }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                markers: {
+                    size: 5,
+                    strokeWidth: 2,
+                    strokeColors: '#fff',
+                    hover: { size: 7 },
+                    discrete: differenceData.map(function (val, i) {
+                        return {
+                            seriesIndex: 0,
+                            dataPointIndex: i,
+                            fillColor: val >= 0 ? '#10b981' : '#ef4444',
+                            strokeColor: '#fff',
+                            size: 5
+                        };
+                    })
+                },
+                xaxis: {
+                    categories: accrualMonthLabels,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                        style: {
+                            fontSize: '11px',
+                            colors: '#6b7280'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            var abs = Math.abs(value);
+                            var sign = value < 0 ? '-' : '';
+                            var prefix = value > 0 ? '+' : '';
+                            if (abs >= 1000000000) return prefix + sign + (abs / 1000000000).toFixed(1) + "B";
+                            if (abs >= 1000000) return prefix + sign + (abs / 1000000).toFixed(1) + "M";
+                            if (abs >= 1000) return prefix + sign + (abs / 1000).toFixed(0) + "K";
+                            return (value > 0 ? '+' : '') + value;
+                        },
+                        style: {
+                            fontSize: '11px',
+                            colors: '#6b7280'
+                        }
+                    }
+                },
+                annotations: {
+                    yaxis: [{
+                        y: 0,
+                        borderColor: '#9ca3af',
+                        strokeDashArray: 0,
+                        borderWidth: 1,
+                        label: {
+                            text: 'Break-even',
+                            position: 'left',
+                            style: {
+                                fontSize: '10px',
+                                color: '#6b7280',
+                                background: '#f9fafb',
+                                padding: { left: 6, right: 6, top: 2, bottom: 2 }
+                            }
+                        }
+                    }]
+                },
+                colors: ['#f59e0b'], // Amber line
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.05,
+                        stops: [0, 90, 100]
+                    }
+                },
+                grid: {
+                    strokeDashArray: 4,
+                    borderColor: '#e5e7eb'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            var prefix = val > 0 ? '+' : '';
+                            return prefix + 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
+                        }
+                    }
+                },
+                legend: { show: false }
+            };
+
+            var deviationChart = new ApexCharts(document.querySelector("#deviationChart"), deviationOptions);
+            deviationChart.render();
         });
 
         // Alpine.js component for Actual Revenue Modal
@@ -1076,7 +1188,7 @@
                 }
             };
         }
-        
+
         // Alpine.js component for Accrual Detail Modal
         function accrualDetailModal() {
             return {
@@ -1086,12 +1198,12 @@
                 monthName: '',
                 details: [],
                 totalAmount: 0,
-                
+
                 openModal(year, month) {
                     this.showModal = true;
                     this.fetchDetails(year, month);
                 },
-                
+
                 closeModal() {
                     this.showModal = false;
                     // Reset state
@@ -1106,11 +1218,11 @@
                 formatCurrency(value) {
                     return new Intl.NumberFormat('id-ID').format(value);
                 },
-                
+
                 async fetchDetails(year, month) {
                     this.loading = true;
                     this.errorMsg = '';
-                    
+
                     try {
                         const response = await fetch(`{{ route('dashboard.accrual-details') }}?year=${year}&month=${month}`, {
                             headers: {
@@ -1118,9 +1230,9 @@
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
-                        
+
                         const data = await response.json();
-                        
+
                         if (response.ok) {
                             this.details = data.details;
                             this.monthName = data.month_name;

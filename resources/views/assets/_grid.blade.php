@@ -3,16 +3,19 @@
         $rentedArea = $asset->rented_area;
         $availableArea = $asset->available_area;
         $totalArea = $asset->area_sqm;
-        $usagePercent = $totalArea > 0 ? ($rentedArea / $totalArea) * 100 : 0;
+        $companyUsed = $asset->company_used_area_sqm;
+        $totalOccupied = $rentedArea + $companyUsed;
+        $usagePercent = $totalArea > 0 ? ($totalOccupied / $totalArea) * 100 : 0;
         $isFullyRented = $availableArea <= 0;
         $activeContracts = $asset->activeContracts()->with('tenant')->get();
+        $unusedArea = $asset->unused_area;
     @endphp
-    <div class="relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div class="relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow" data-asset-card="{{ $asset->id }}">
         <!-- Status Badge -->
-        <div class="absolute top-3 right-3">
+        <div class="absolute top-3 right-3 asset-badge">
             @if($isFullyRented)
                 <span class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Full</span>
-            @elseif($rentedArea > 0)
+            @elseif($totalOccupied > 0)
                 <span class="inline-flex items-center rounded-full bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Partial</span>
             @else
                 <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Available</span>
@@ -29,23 +32,45 @@
             <div class="mt-4">
                 <div class="flex justify-between text-sm mb-1">
                     <span class="text-gray-500">Space Usage</span>
-                    <span class="font-medium text-gray-900">{{ number_format($usagePercent, 0) }}%</span>
+                    <span class="asset-usage-pct font-medium text-gray-900">{{ number_format($usagePercent, 0) }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div class="h-2.5 rounded-full transition-all duration-300 
+                    <div class="asset-progress-bar h-2.5 rounded-full transition-all duration-300 
                         {{ $isFullyRented ? 'bg-red-500' : ($usagePercent > 0 ? 'bg-indigo-500' : 'bg-emerald-500') }}" 
                          style="width: {{ min($usagePercent, 100) }}%"></div>
                 </div>
                 <div class="flex justify-between text-xs mt-1.5">
                     <span class="text-gray-500">Rented: <span class="font-medium text-gray-700">{{ number_format($rentedArea, 0) }} m²</span></span>
-                    <span class="text-emerald-600 font-medium">{{ number_format($availableArea, 0) }} m² free</span>
+                    <span class="asset-free-text text-emerald-600 font-medium">{{ number_format($availableArea, 0) }} m² free</span>
                 </div>
             </div>
 
-            <dl class="mt-4 space-y-2 text-sm border-t border-gray-100 pt-4">
+            <dl class="mt-4 space-y-2 text-sm border-t border-gray-100 pt-4" data-asset-row="{{ $asset->id }}">
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Total Area</dt>
                     <dd class="font-medium text-gray-900">{{ number_format($totalArea, 0) }} m²</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Dipakai Perusahaan</dt>
+                    @unless(Auth::user()->isGuest())
+                        <dd class="company-area-value font-medium text-indigo-600 cursor-pointer hover:text-indigo-500 transition-colors"
+                            data-asset-id="{{ $asset->id }}"
+                            data-asset-name="{{ $asset->name }}"
+                            data-company-used="{{ $companyUsed }}"
+                            data-max-area="{{ max(0, $totalArea - $rentedArea) }}"
+                            data-total-area="{{ $totalArea }}"
+                            data-rented-area="{{ $rentedArea }}"
+                            data-url="{{ route('assets.updateCompanyArea', $asset) }}"
+                            title="Klik untuk mengubah">
+                            {{ number_format($companyUsed, 0) }} m²
+                        </dd>
+                    @else
+                        <dd class="font-medium text-gray-900">{{ number_format($companyUsed, 0) }} m²</dd>
+                    @endunless
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-500">Belum Dipakai</dt>
+                    <dd class="company-unused font-medium text-gray-900">{{ number_format($unusedArea, 0) }} m²</dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-gray-500">Condition</dt>

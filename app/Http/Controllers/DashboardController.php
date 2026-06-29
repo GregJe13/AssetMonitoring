@@ -35,8 +35,7 @@ class DashboardController extends Controller
             ->whereYear('paid_at', $selectedYear)
             ->sum('amount_paid');
 
-        $invoiceRevenue = Invoice::where('status', 'paid')
-            ->whereYear('invoice_date', $selectedYear)
+        $invoiceRevenue = Invoice::whereYear('payment_date', $selectedYear)
             ->sum('amount');
 
         $totalRevenue = $paymentRevenue + $invoiceRevenue;
@@ -54,7 +53,7 @@ class DashboardController extends Controller
             ->distinct()
             ->pluck('asset_id');
 
-        // Rented asset IDs from amendments  
+        // Rented asset IDs from amendments
         $amendmentRentedIds = DB::table('amendment_assets')
             ->join('amendments', 'amendments.id', '=', 'amendment_assets.amendment_id')
             ->where('amendments.status', 'active')
@@ -70,16 +69,18 @@ class DashboardController extends Controller
         $overdueAmount = Payment::where('payment_status', 'overdue')->sum('amount_due');
 
         // Active Tenant counts by contract type
-        $activeSewaTenantsCount = Tenant::whereHas('contractHistory', fn($q) =>
-            $q->where('status', 'active')
-              ->where('end_date', '>=', now()->startOfDay())
-              ->where('contract_type', 'sewa')
+        $activeSewaTenantsCount = Tenant::whereHas(
+            'contractHistory',
+            fn ($q) => $q->where('status', 'active')
+                ->where('end_date', '>=', now()->startOfDay())
+                ->where('contract_type', 'sewa')
         )->count();
 
-        $activeKsuTenantsCount = Tenant::whereHas('contractHistory', fn($q) =>
-            $q->where('status', 'active')
-              ->where('end_date', '>=', now()->startOfDay())
-              ->where('contract_type', 'ksu')
+        $activeKsuTenantsCount = Tenant::whereHas(
+            'contractHistory',
+            fn ($q) => $q->where('status', 'active')
+                ->where('end_date', '>=', now()->startOfDay())
+                ->where('contract_type', 'ksu')
         )->count();
 
         $totalActiveTenantsCount = $activeSewaTenantsCount + $activeKsuTenantsCount;
@@ -93,9 +94,9 @@ class DashboardController extends Controller
                 // Past expiry but workflow not yet done
                 $q->where('end_date', '<', now()->startOfDay())
                     ->where(function ($q2) {
-                    $q2->whereDoesntHave('workflow')
-                        ->orWhereHas('workflow', fn($wq) => $wq->whereNull('completed_at'));
-                });
+                        $q2->whereDoesntHave('workflow')
+                            ->orWhereHas('workflow', fn ($wq) => $wq->whereNull('completed_at'));
+                    });
             })
             ->count();
 
@@ -124,12 +125,11 @@ class DashboardController extends Controller
 
         // Revenue Trend — Invoices
         $invoiceTrend = Invoice::select(
-            DB::raw('year(invoice_date) as year'),
-            DB::raw('month(invoice_date) as month'),
+            DB::raw('year(payment_date) as year'),
+            DB::raw('month(payment_date) as month'),
             DB::raw('sum(amount) as total')
         )
-            ->where('status', 'paid')
-            ->whereYear('invoice_date', $selectedYear)
+            ->whereYear('payment_date', $selectedYear)
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -159,7 +159,7 @@ class DashboardController extends Controller
         // ============================================================
         $accrualYear = $selectedYear;
         $yearStart = Carbon::create($accrualYear, 1, 1)->startOfDay();
-        $yearEnd   = Carbon::create($accrualYear, 12, 31)->endOfDay();
+        $yearEnd = Carbon::create($accrualYear, 12, 31)->endOfDay();
 
         $accrualData = array_fill(0, 12, 0);
         $accrualMonths = [];
@@ -177,13 +177,13 @@ class DashboardController extends Controller
 
         foreach ($sewaContracts as $contract) {
             $start = Carbon::parse($contract->start_date);
-            $end   = Carbon::parse($contract->end_date);
+            $end = Carbon::parse($contract->end_date);
             $totalMonths = max(1, $start->diffInMonths($end));
             $monthlyAccrual = $contract->total_rental_value / $totalMonths;
 
             for ($m = 1; $m <= 12; $m++) {
                 $monthStart = Carbon::create($accrualYear, $m, 1)->startOfDay();
-                $monthEnd   = $monthStart->copy()->endOfMonth()->endOfDay();
+                $monthEnd = $monthStart->copy()->endOfMonth()->endOfDay();
 
                 if ($start <= $monthEnd && $end >= $monthStart) {
                     $accrualData[$m - 1] += $monthlyAccrual;
@@ -193,8 +193,8 @@ class DashboardController extends Controller
 
         // --- B. Amendments (Sewa): perlakukan sebagai entitas terpisah ---
         $sewaAmendments = Amendment::whereHas('contract', function ($q) {
-                $q->where('contract_type', 'sewa');
-            })
+            $q->where('contract_type', 'sewa');
+        })
             ->whereNotNull('total_rental_value')
             ->where('total_rental_value', '>', 0)
             ->where('new_start_date', '<=', $yearEnd)
@@ -203,13 +203,13 @@ class DashboardController extends Controller
 
         foreach ($sewaAmendments as $amendment) {
             $start = Carbon::parse($amendment->new_start_date);
-            $end   = Carbon::parse($amendment->new_end_date);
+            $end = Carbon::parse($amendment->new_end_date);
             $totalMonths = max(1, $start->diffInMonths($end));
             $monthlyAccrual = $amendment->total_rental_value / $totalMonths;
 
             for ($m = 1; $m <= 12; $m++) {
                 $monthStart = Carbon::create($accrualYear, $m, 1)->startOfDay();
-                $monthEnd   = $monthStart->copy()->endOfMonth()->endOfDay();
+                $monthEnd = $monthStart->copy()->endOfMonth()->endOfDay();
 
                 if ($start <= $monthEnd && $end >= $monthStart) {
                     $accrualData[$m - 1] += $monthlyAccrual;
@@ -217,17 +217,17 @@ class DashboardController extends Controller
             }
         }
 
-        // --- C. Kontrak KSU: revenue dari Invoice, langsung masuk ke bulan invoice_date ---
+        // --- C. Kontrak KSU: revenue dari Invoice, masuk ke bulan payment_date ---
         $ksuInvoiceTrend = Invoice::select(
-                DB::raw('MONTH(invoice_date) as month'),
-                DB::raw('SUM(amount) as total')
-            )
+            DB::raw('MONTH(payment_date) as month'),
+            DB::raw('SUM(amount) as total')
+        )
             ->whereHas('tenant', function ($q) {
                 $q->whereHas('contractHistory', function ($q2) {
                     $q2->where('contract_type', 'ksu');
                 });
             })
-            ->whereYear('invoice_date', $accrualYear)
+            ->whereYear('payment_date', $accrualYear)
             ->groupBy('month')
             ->pluck('total', 'month');
 
@@ -236,7 +236,7 @@ class DashboardController extends Controller
         }
 
         // Round accrual data
-        $accrualData = array_map(fn($v) => round($v, 2), $accrualData);
+        $accrualData = array_map(fn ($v) => round($v, 2), $accrualData);
 
         // --- Calculate Total Accrual for the Year ---
         $totalAccrualYtd = array_sum($accrualData);
@@ -250,16 +250,44 @@ class DashboardController extends Controller
             $actualData[] = (float) ($actualRevenues[$m] ?? 0);
         }
 
+        // --- Calculate Total Actual YTD (sum of manually-inputted actual values for the year) ---
+        $totalActualYtd = array_sum($actualData);
+
         // Available years for filter dropdown
         $availableYears = range($currentYear - 3, $currentYear + 1);
 
         // 3. Asset Status
         $availableAssets = $totalAssets - $rentedAssetIds;
 
+        // 3b. Komposisi luas aset untuk pie chart (dipakai perusahaan / tenant / belum dipakai)
+        $today = now()->startOfDay();
+        $totalAreaSqm = (float) Asset::sum('area_sqm');
+        $companyUsedArea = (float) Asset::sum('company_used_area_sqm');
+
+        // Luas yang sedang disewa tenant — mirror logika Asset::getRentedAreaAttribute()
+        $contractTenantArea = (float) DB::table('contract_assets')
+            ->join('contracts', 'contracts.id', '=', 'contract_assets.contract_id')
+            ->where('contracts.status', 'active')
+            ->where('contracts.start_date', '<=', $today)
+            ->where('contracts.end_date', '>=', $today)
+            ->sum('contract_assets.rented_area_sqm');
+
+        $amendmentTenantArea = (float) DB::table('amendment_assets')
+            ->join('amendments', 'amendments.id', '=', 'amendment_assets.amendment_id')
+            ->where('amendments.status', 'active')
+            ->where('amendments.new_start_date', '<=', $today)
+            ->where('amendments.new_end_date', '>=', $today)
+            ->sum('amendment_assets.rented_area_sqm');
+
+        $tenantUsedArea = $contractTenantArea + $amendmentTenantArea;
+        $unusedArea = max(0, $totalAreaSqm - $companyUsedArea - $tenantUsedArea);
+
+        $areaUsageData = [round($companyUsedArea, 2), round($tenantUsedArea, 2), round($unusedArea, 2)];
+
         // 4. Upcoming Contract Expirations (List)
         // Case 1: still within 60-day window → always show
         // Case 2: past expiry but workflow not done → still show until workflow completed
-        $expiringContracts = Contract::with(['tenant', 'workflow'])
+        $expiringContractsQuery = Contract::with(['tenant', 'workflow'])
             ->where(function ($q) {
                 // Case 1: within 60-day window
                 $q->where('end_date', '>=', now()->startOfDay())
@@ -269,21 +297,14 @@ class DashboardController extends Controller
                 // Case 2: already expired, but workflow not completed
                 $q->where('end_date', '<', now()->startOfDay())
                     ->where(function ($q2) {
-                    $q2->whereDoesntHave('workflow')
-                        ->orWhereHas('workflow', fn($wq) => $wq->whereNull('completed_at'));
-                });
+                        $q2->whereDoesntHave('workflow')
+                            ->orWhereHas('workflow', fn ($wq) => $wq->whereNull('completed_at'));
+                    });
             })
-            ->orderBy('end_date', 'asc')
-            ->limit(10)
-            ->get();
+            ->orderBy('end_date', 'asc');
 
-        $expiringAmendments = Amendment::with(['contract.tenant'])
-            ->where('status', 'active')
-            ->where('new_end_date', '>=', now()->startOfDay())
-            ->where('new_end_date', '<=', now()->addDays(60))
-            ->orderBy('new_end_date', 'asc')
-            ->limit(5)
-            ->get();
+        $totalExpiringContracts = $expiringContractsQuery->count();
+        $expiringContracts = $expiringContractsQuery->limit(3)->get();
 
         // 4b. Pending Renewal Follow-ups (workflow selesai tapi belum buat kontrak/amandemen)
         $pendingRenewals = ContractWorkflow::with(['contract.tenant'])
@@ -292,19 +313,14 @@ class DashboardController extends Controller
             ->get();
 
         // 5. Recent Overdue Payments
+        $totalOverduePayments = $overduePayments; // Already counted above (line 69)
         $recentOverdue = Payment::with(['contract.tenant'])
             ->where('payment_status', 'overdue')
             ->orderBy('due_date', 'asc')
             ->limit(5)
             ->get();
 
-        // 6. Unpaid Invoices
-        $unpaidInvoices = Invoice::with(['tenant', 'assets'])
-            ->where('status', 'unpaid')
-            ->orderBy('due_date', 'asc')
-            ->orderBy('invoice_date', 'desc')
-            ->limit(5)
-            ->get();
+
 
         return view('dashboard', compact(
             'totalRevenue',
@@ -319,17 +335,20 @@ class DashboardController extends Controller
             'revenueData',
             'rentedAssetIds',
             'availableAssets',
+            'areaUsageData',
             'expiringContracts',
-            'expiringAmendments',
             'pendingRenewals',
             'recentOverdue',
-            'unpaidInvoices',
+            'totalExpiringContracts',
+            'totalOverduePayments',
+
             'accrualData',
             'actualData',
             'accrualMonths',
             'accrualYear',
             'availableYears',
-            'totalAccrualYtd'
+            'totalAccrualYtd',
+            'totalActualYtd'
         ));
     }
 
@@ -362,7 +381,7 @@ class DashboardController extends Controller
                 'type' => 'Kontrak Sewa',
                 'tenant_name' => $contract->tenant->name ?? 'Unknown',
                 'contract_number' => $contract->no_pks ?? $contract->no_bak ?? '-',
-                'amount' => round($monthlyAccrual, 2)
+                'amount' => round($monthlyAccrual, 2),
             ];
         }
 
@@ -387,7 +406,7 @@ class DashboardController extends Controller
                 'type' => 'Amandemen Sewa',
                 'tenant_name' => $amendment->contract->tenant->name ?? 'Unknown',
                 'contract_number' => $amendment->contract->no_pks ?? $amendment->contract->no_bak ?? '-',
-                'amount' => round($monthlyAccrual, 2)
+                'amount' => round($monthlyAccrual, 2),
             ];
         }
 
@@ -398,8 +417,8 @@ class DashboardController extends Controller
                     $q2->where('contract_type', 'ksu');
                 });
             })
-            ->whereYear('invoice_date', $year)
-            ->whereMonth('invoice_date', $month)
+            ->whereYear('payment_date', $year)
+            ->whereMonth('payment_date', $month)
             ->get();
 
         foreach ($ksuInvoices as $invoice) {
@@ -407,7 +426,7 @@ class DashboardController extends Controller
                 'type' => 'Invoice KSU',
                 'tenant_name' => $invoice->tenant->name ?? 'Unknown',
                 'contract_number' => $invoice->invoice_number,
-                'amount' => (float) $invoice->amount
+                'amount' => (float) $invoice->amount,
             ];
         }
 
@@ -418,7 +437,7 @@ class DashboardController extends Controller
             'month' => $month,
             'month_name' => $monthStart->translatedFormat('F Y'),
             'details' => $details,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 }

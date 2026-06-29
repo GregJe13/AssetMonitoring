@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 
@@ -70,7 +71,13 @@ class TenantController extends Controller
             
         $partnershipSummary = $tenant->getPartnershipSummary();
 
-        return view('tenants.show', compact('tenant', 'contractHistory', 'partnershipSummary'));
+        // Invoice history for this tenant
+        $invoiceHistory = $tenant->invoices()
+            ->with('assets')
+            ->orderBy('payment_date', 'desc')
+            ->get();
+
+        return view('tenants.show', compact('tenant', 'contractHistory', 'partnershipSummary', 'invoiceHistory'));
     }
 
     /**

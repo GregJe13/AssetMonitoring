@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AssetController extends Controller
 {
@@ -15,23 +14,26 @@ class AssetController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('id_gedung', 'like', "%{$search}%");
+                ->orWhere('id_gedung', 'like', "%{$search}%");
         }
-        
+
         // Fetch all assets first (sorting needs to be done in PHP because rented_area is calculated)
         $allAssets = $query->orderBy('id')->get();
 
-        // Calculate usage percentage and sort by it (highest usage first)
+        // Calculate total usage percentage (rented + company) and sort by it (highest usage first)
         $sortedAssets = $allAssets->sortByDesc(function ($asset) {
-            if ($asset->area_sqm <= 0) return 0;
-            return ($asset->rented_area / $asset->area_sqm) * 100;
+            if ($asset->area_sqm <= 0) {
+                return 0;
+            }
+
+            return (($asset->rented_area + (float) $asset->company_used_area_sqm) / $asset->area_sqm) * 100;
         })->values();
 
         // Manual pagination
         $perPage = 15;
         $currentPage = $request->get('page', 1);
         $pagedAssets = $sortedAssets->forPage($currentPage, $perPage);
-        
+
         $assets = new \Illuminate\Pagination\LengthAwarePaginator(
             $pagedAssets,
             $sortedAssets->count(),
@@ -54,6 +56,7 @@ class AssetController extends Controller
             'name' => 'required|string|max:255',
             'id_gedung' => 'required|string|unique:assets,id_gedung',
             'area_sqm' => 'required|numeric|min:0',
+            'company_used_area_sqm' => 'nullable|numeric|min:0',
             'building_condition' => 'required|in:baik,cukup,rusak_ringan,rusak_berat,perlu_renovasi',
         ]);
 
@@ -82,8 +85,9 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'id_gedung' => 'required|string|unique:assets,id_gedung,' . $asset->id,
+            'id_gedung' => 'required|string|unique:assets,id_gedung,'.$asset->id,
             'area_sqm' => 'required|numeric|min:0',
+            'company_used_area_sqm' => 'nullable|numeric|min:0',
             'building_condition' => 'required|in:baik,cukup,rusak_ringan,rusak_berat,perlu_renovasi',
         ]);
 
@@ -92,9 +96,51 @@ class AssetController extends Controller
         return redirect()->route('assets.index')->with('success', 'Asset updated successfully.');
     }
 
+    /**
+     * Update hanya kolom luas yang dipakai perusahaan (inline edit dari halaman index, via AJAX).
+     */
+    public function updateCompanyArea(Request $request, Asset $asset)
+    {
+        // Max allowed = total area minus area rented by tenants
+        $maxAllowed = max(0, (float) $asset->area_sqm - $asset->rented_area);
+
+        $validated = $request->validate([
+            'company_used_area_sqm' => ['required', 'numeric', 'min:0', 'max:'.$maxAllowed],
+        ], [
+            'company_used_area_sqm.max' => "Luas maksimal yang bisa dipakai perusahaan adalah {$maxAllowed} m² (total {$asset->area_sqm} m² dikurangi {$asset->rented_area} m² yang disewa tenant).",
+        ]);
+
+        $asset->update($validated);
+
+        // Recalculate all values after update
+        $asset->refresh();
+        $companyUsed = (float) $asset->company_used_area_sqm;
+        $rentedArea = $asset->rented_area;
+        $totalArea = (float) $asset->area_sqm;
+        $totalOccupied = $rentedArea + $companyUsed;
+        $usagePercent = $totalArea > 0 ? round(($totalOccupied / $totalArea) * 100, 0) : 0;
+        $availableArea = $asset->available_area;
+        $unusedArea = $asset->unused_area;
+        $maxCompanyArea = max(0, $totalArea - $rentedArea);
+
+        return response()->json([
+            'success'              => true,
+            'company_used_area_sqm'=> $companyUsed,
+            'unused_area'          => number_format($unusedArea, 0),
+            'available_area'       => number_format($availableArea, 0),
+            'usage_percent'        => $usagePercent,
+            'total_occupied'       => $totalOccupied,
+            'is_full'              => $availableArea <= 0,
+            'rented_area'          => $rentedArea,
+            'total_area'           => $totalArea,
+            'max_company_area'     => $maxCompanyArea,
+        ]);
+    }
+
     public function destroy(Asset $asset)
     {
         $asset->delete();
+
         return redirect()->route('assets.index')->with('success', 'Asset deleted successfully.');
     }
 
@@ -109,22 +155,25 @@ class AssetController extends Controller
         if ($request->has('search') && $request->search !== '') {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('id_gedung', 'like', "%{$search}%");
+                ->orWhere('id_gedung', 'like', "%{$search}%");
         }
-        
-        // Fetch and sort by usage percentage
+
+        // Fetch and sort by total usage percentage (rented + company)
         $allAssets = $query->orderBy('id')->get();
         $sortedAssets = $allAssets->sortByDesc(function ($asset) {
-            if ($asset->area_sqm <= 0) return 0;
-            return ($asset->rented_area / $asset->area_sqm) * 100;
+            if ($asset->area_sqm <= 0) {
+                return 0;
+            }
+
+            return (($asset->rented_area + (float) $asset->company_used_area_sqm) / $asset->area_sqm) * 100;
         })->values();
 
         // Return rendered HTML partial
         $html = view('assets._grid', ['assets' => $sortedAssets])->render();
-        
+
         return response()->json([
             'html' => $html,
-            'count' => $sortedAssets->count()
+            'count' => $sortedAssets->count(),
         ]);
     }
 }

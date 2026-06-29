@@ -4,7 +4,7 @@
 <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
         <h1 class="text-2xl font-semibold leading-6 text-gray-900">Invoices</h1>
-        <p class="mt-2 text-sm text-gray-700">Pencatatan ad-hoc untuk penggunaan asset di luar kontrak formal.</p>
+        <p class="mt-2 text-sm text-gray-700">Pencatatan penerimaan pembayaran.</p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <a href="{{ route('invoices.create') }}" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
@@ -44,8 +44,7 @@
                             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tenant</th>
                             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Assets</th>
                             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Amount</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tanggal</th>
-                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tanggal Bayar</th>
                             <th class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
@@ -78,15 +77,10 @@
                                 Rp {{ number_format($invoice->amount) }}
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {{ $invoice->invoice_date->format('d M Y') }}
-                                @if($invoice->due_date)
-                                    <div class="text-xs text-gray-400">Due: {{ $invoice->due_date->format('d M Y') }}</div>
+                                {{ $invoice->payment_date->format('d M Y') }}
+                                @if($invoice->invoice_date)
+                                    <div class="text-xs text-gray-400">Invoice: {{ $invoice->invoice_date->format('d M Y') }}</div>
                                 @endif
-                            </td>
-                            <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $invoice->status_color }}">
-                                    {{ ucfirst($invoice->status) }}
-                                </span>
                             </td>
                             <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <a href="{{ route('invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
@@ -94,7 +88,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-3 py-8 text-center text-sm text-gray-500">Belum ada invoice.</td>
+                            <td colspan="6" class="px-3 py-8 text-center text-sm text-gray-500">Belum ada invoice.</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -22,7 +22,7 @@ class InvoiceController extends Controller
             });
         }
 
-        $invoices = $query->orderBy('invoice_date', 'desc')->paginate(10)->withQueryString();
+        $invoices = $query->orderBy('payment_date', 'desc')->paginate(10)->withQueryString();
 
         return view('invoices.index', compact('invoices'));
     }
@@ -43,8 +43,8 @@ class InvoiceController extends Controller
             'amount' => 'required|numeric|min:0',
             'tenant_id' => 'nullable|exists:tenants,id',
             'tenant_name_manual' => 'nullable|string|max:255',
-            'invoice_date' => 'required|date',
-            'due_date' => 'nullable|date|after_or_equal:invoice_date',
+            'payment_date' => 'required|date',
+            'invoice_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'asset_ids' => 'nullable|array',
             'asset_ids.*' => 'exists:assets,id',
@@ -59,7 +59,6 @@ class InvoiceController extends Controller
         }
 
         $data = collect($validated)->except('asset_ids', 'invoice_file')->toArray();
-        $data['status'] = 'unpaid';
 
         $invoice = Invoice::create($data);
 
@@ -96,8 +95,8 @@ class InvoiceController extends Controller
             'amount' => 'required|numeric|min:0',
             'tenant_id' => 'nullable|exists:tenants,id',
             'tenant_name_manual' => 'nullable|string|max:255',
-            'invoice_date' => 'required|date',
-            'due_date' => 'nullable|date|after_or_equal:invoice_date',
+            'payment_date' => 'required|date',
+            'invoice_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'asset_ids' => 'nullable|array',
             'asset_ids.*' => 'exists:assets,id',
@@ -126,16 +125,5 @@ class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice berhasil dihapus.');
-    }
-
-    public function markPaid(Invoice $invoice)
-    {
-        if ($invoice->status === 'paid') {
-            return back()->with('info', 'Invoice sudah dibayar.');
-        }
-
-        $invoice->markAsPaid();
-
-        return back()->with('success', 'Invoice berhasil ditandai sebagai Paid.');
     }
 }
