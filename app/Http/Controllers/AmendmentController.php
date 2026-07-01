@@ -54,7 +54,7 @@ class AmendmentController extends Controller
      */
     public function contractsForTenant(Tenant $tenant)
     {
-        $contracts = $tenant->contracts()
+        $contracts = $tenant->contractHistory()
             ->with('assets')
             ->orderBy('created_at', 'desc')
             ->limit(5)
