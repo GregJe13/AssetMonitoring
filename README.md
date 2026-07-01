@@ -20,16 +20,19 @@ A comprehensive **Contract Monitoring System** built with Laravel 12 for managin
 ## ✨ Features
 
 - **Tenant Management** — Create, view, and manage tenant information
-- **Asset Management** — Track and organize company assets
-- **Contract Management** — Full contract lifecycle with start/end dates and associated assets
+- **Asset Management** — Track and organize company assets with company-used area tracking
+- **Contract Management** — Full contract lifecycle with start/end dates and associated assets (Sewa & KSU types)
 - **Contract Amendments** — Support for contract modifications and renewals
-- **Payment Tracking** — Record and monitor payments linked to contracts
-- **Invoice Generation** — Create and manage invoices with asset line items
+- **Payment Tracking** — Record and monitor payments linked to contracts and amendments
+- **Invoice Generation** — Create and manage invoices with tenant association and file uploads
 - **Workflow System** — Visual step-by-step contract workflow with evidence uploads
 - **Renewal Workflow** — Automated renewal process with choice to create new contract or amendment
-- **Dashboard** — Dynamic overview with charts, expiring contracts alerts, and key metrics
-- **Role-Based Access** — Multi-role authentication powered by Laravel Sanctum
+- **Accrual & Actual Revenue** — Monthly revenue tracking with accrual vs actual comparison charts
+- **Activity Logging** — Track user actions across the system for audit purposes
+- **Dashboard** — Dynamic overview with charts, expiring contracts alerts, overdue payments, and key metrics (YTD)
+- **Role-Based Access** — Multi-role authentication (admin, manager, worker, guest) powered by Laravel Sanctum
 - **Forgot Password** — Email-based password recovery flow
+- **User Management** — Admin panel for managing user accounts and roles
 
 ---
 
@@ -83,10 +86,10 @@ DB_PASSWORD=your_password
 
 ### 5. Run database migrations
 
-> **⚠️ Important:** This project uses migration files located in the `database/migrations/final/` directory. You must specify this path when running migrations.
+> **⚠️ Important:** This project uses migration files located in the `database/migrations/data/` directory. You must specify this path when running migrations.
 
 ```bash
-php artisan migrate --path=database/migrations/final
+php artisan migrate --path=database/migrations/data
 ```
 
 <details>
@@ -98,40 +101,42 @@ php artisan migrate --path=database/migrations/final
 | 2 | `0001_01_01_000001_create_cache_table.php` | Cache and cache locks tables |
 | 3 | `0001_01_01_000002_create_jobs_table.php` | Jobs, job batches, and failed jobs tables |
 | 4 | `2026_01_07_010000_create_tenants_table.php` | Tenants table |
-| 5 | `2026_01_07_010001_create_assets_table.php` | Assets table |
-| 6 | `2026_01_07_010002_create_contracts_table.php` | Contracts table |
+| 5 | `2026_01_07_010001_create_assets_table.php` | Assets table (with company_used_area_sqm) |
+| 6 | `2026_01_07_010002_create_contracts_table.php` | Contracts table (Sewa & KSU types, flexible payment) |
 | 7 | `2026_01_07_010003_create_contract_assets_table.php` | Contract-Asset pivot table |
-| 8 | `2026_01_07_010004_create_payments_table.php` | Payments table |
-| 9 | `2026_02_03_100000_add_role_to_users_table.php` | Adds role column to users |
-| 10 | `2026_02_20_021059_create_contract_workflows_table.php` | Contract workflows table |
+| 8 | `2026_01_07_010004_create_payments_table.php` | Payments table (with amendment_id FK) |
+| 9 | `2026_02_03_100000_add_role_to_users_table.php` | Adds role column to users (admin, manager, worker, guest) |
+| 10 | `2026_02_20_021059_create_contract_workflows_table.php` | Contract workflows table (with renewal_action) |
 | 11 | `2026_02_20_021105_create_workflow_evidence_table.php` | Workflow evidence uploads table |
-| 12 | `2026_02_24_023848_create_invoices_table.php` | Invoices table |
+| 12 | `2026_02_24_023848_create_invoices_table.php` | Invoices table (post-payment model with tenant association) |
 | 13 | `2026_02_24_023925_create_invoice_assets_table.php` | Invoice-Asset pivot table |
-| 14 | `2026_02_27_040000_create_amendments_table.php` | Contract amendments table |
+| 14 | `2026_02_27_040000_create_amendments_table.php` | Contract amendments table (+ payments FK constraint) |
 | 15 | `2026_02_27_040001_create_amendment_assets_table.php` | Amendment-Asset pivot table |
-| 16 | `2026_02_27_040002_add_amendment_id_to_payments_table.php` | Links payments to amendments |
+| 16 | `2026_03_31_100001_create_activity_logs_table.php` | Activity logs table for user action tracking |
+| 17 | `2026_05_07_100000_create_actual_revenues_table.php` | Actual revenues table for monthly revenue input |
 
 </details>
 
 ### 6. Run database seeders
 
-> **⚠️ Important:** Seeders **must** be run individually and in the exact order listed below, as each seeder depends on data from the previous one.
+> **⚠️ Important:** Use `DatabaseSeeder2` to seed all required data in the correct order with a single command.
 
 ```bash
-php artisan db:seed --class=TenantSeeder
-php artisan db:seed --class=TestAsset
-php artisan db:seed --class=TestContractSeeder
-php artisan db:seed --class=ContractAsset
-php artisan db:seed --class=PaymentSeeder
+php artisan db:seed --class=DatabaseSeeder2
 ```
+
+<details>
+<summary>📄 Seeders executed by DatabaseSeeder2</summary>
 
 | Order | Seeder | Description |
 |-------|--------|-------------|
 | 1 | `TenantSeeder` | Seeds tenant records |
 | 2 | `TestAsset` | Seeds asset/property records |
-| 3 | `TestContractSeeder` | Seeds contracts linked to tenants |
-| 4 | `ContractAsset` | Seeds the contract-asset relationships |
-| 5 | `PaymentSeeder` | Seeds payment records for contracts |
+| 3 | `TestContractSeeder2` | Seeds contracts linked to tenants |
+| 4 | `ContractAsset2` | Seeds the contract-asset relationships |
+| 5 | `PaymentSeeder2` | Seeds payment records for contracts |
+
+</details>
 
 ### 7. Build frontend assets
 
@@ -161,26 +166,70 @@ The application will be available at **http://localhost:8000**.
 ```
 monitoring/
 ├── app/
-│   ├── Http/Controllers/    # Application controllers
-│   └── Models/              # Eloquent models
+│   ├── Http/Controllers/
+│   │   ├── ActivityLogController.php
+│   │   ├── ActualRevenueController.php
+│   │   ├── AmendmentController.php
+│   │   ├── AssetController.php
+│   │   ├── ContractController.php
+│   │   ├── DashboardController.php
+│   │   ├── ExpiringContractController.php
+│   │   ├── ForgotPasswordController.php
+│   │   ├── InvoiceController.php
+│   │   ├── LoginController.php
+│   │   ├── OverduePaymentController.php
+│   │   ├── PaymentController.php
+│   │   ├── ProfileController.php
+│   │   ├── RegisterController.php
+│   │   ├── TenantController.php
+│   │   ├── UserManagementController.php
+│   │   └── WorkflowController.php
+│   └── Models/
+│       ├── ActivityLog.php
+│       ├── ActualRevenue.php
+│       ├── Amendment.php
+│       ├── Asset.php
+│       ├── Contract.php
+│       ├── ContractWorkflow.php
+│       ├── Invoice.php
+│       ├── Payment.php
+│       ├── Tenant.php
+│       ├── User.php
+│       └── WorkflowEvidence.php
 ├── database/
-│   ├── migrations/final/    # ⭐ Production migration files
-│   ├── seeders/             # Database seeders
-│   └── factories/           # Model factories
+│   ├── migrations/data/       # ⭐ Production migration files (consolidated)
+│   ├── seeders/               # Database seeders
+│   │   ├── DatabaseSeeder2.php    # ⭐ Main seeder (use this)
+│   │   ├── TenantSeeder.php
+│   │   ├── TestAsset.php
+│   │   ├── TestContractSeeder2.php
+│   │   ├── ContractAsset2.php
+│   │   └── PaymentSeeder2.php
+│   └── factories/             # Model factories
 ├── resources/
-│   └── views/               # Blade templates
-│       ├── amendments/      # Amendment views
-│       ├── assets/          # Asset views
-│       ├── contracts/       # Contract views
-│       ├── invoices/        # Invoice views
-│       ├── layouts/         # Layout templates
-│       ├── login/           # Auth views
-│       ├── payments/        # Payment views
-│       ├── tenants/         # Tenant views
-│       └── dashboard.blade.php
-├── routes/                  # Route definitions
-├── public/                  # Public assets
-└── config/                  # Configuration files
+│   └── views/                 # Blade templates
+│       ├── activity-logs/     # Activity log views
+│       ├── amendments/        # Amendment views
+│       ├── assets/            # Asset views
+│       ├── contracts/         # Contract views
+│       ├── emails/            # Email templates
+│       ├── expiring-contracts/# Expiring contracts "See More" page
+│       ├── invoices/          # Invoice views
+│       ├── layouts/           # Layout templates
+│       ├── login/             # Auth views
+│       ├── overdue-payments/  # Overdue payments "See More" page
+│       ├── payments/          # Payment views
+│       ├── pending-renewals/  # Pending renewal views
+│       ├── profile/           # User profile views
+│       ├── tenants/           # Tenant views
+│       ├── users/             # User management views
+│       ├── dashboard.blade.php
+│       ├── workflow.blade.php
+│       └── workflow-renewal-choice.blade.php
+├── routes/
+│   └── web.php                # Route definitions
+├── public/                    # Public assets
+└── config/                    # Configuration files
 ```
 
 ---
@@ -190,17 +239,210 @@ monitoring/
 ```mermaid
 erDiagram
     USERS ||--o{ CONTRACTS : manages
+    USERS ||--o{ ACTIVITY_LOGS : performs
+    USERS ||--o{ ACTUAL_REVENUES : creates
     TENANTS ||--o{ CONTRACTS : has
+    TENANTS ||--o{ INVOICES : linked_to
     CONTRACTS ||--o{ CONTRACT_ASSETS : contains
     ASSETS ||--o{ CONTRACT_ASSETS : linked_to
+    ASSETS ||--o{ INVOICE_ASSETS : linked_to
+    ASSETS ||--o{ AMENDMENT_ASSETS : linked_to
     CONTRACTS ||--o{ PAYMENTS : receives
     CONTRACTS ||--o{ CONTRACT_WORKFLOWS : tracks
     CONTRACT_WORKFLOWS ||--o{ WORKFLOW_EVIDENCE : uploads
-    CONTRACTS ||--o{ INVOICES : generates
-    INVOICES ||--o{ INVOICE_ASSETS : includes
     CONTRACTS ||--o{ AMENDMENTS : modified_by
     AMENDMENTS ||--o{ AMENDMENT_ASSETS : contains
     AMENDMENTS ||--o{ PAYMENTS : receives
+    INVOICES ||--o{ INVOICE_ASSETS : includes
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        string role "admin|manager|worker|guest"
+        timestamps timestamps
+    }
+
+    TENANTS {
+        bigint id PK
+        string name
+        int id_tenant "nullable"
+        string phone "nullable"
+        string email "nullable"
+        string npwp "nullable"
+        string pic "nullable"
+        string pic_phone "nullable"
+        timestamps timestamps
+        timestamp deleted_at "soft delete"
+    }
+
+    ASSETS {
+        bigint id PK
+        string id_gedung UK
+        string name
+        decimal area_sqm "10,2"
+        decimal company_used_area_sqm "10,2 default:0"
+        enum building_condition "baik|cukup|rusak_ringan|rusak_berat|perlu_renovasi"
+        timestamps timestamps
+        timestamp deleted_at "soft delete"
+    }
+
+    CONTRACTS {
+        bigint id PK
+        bigint tenant_id FK
+        enum contract_type "sewa|ksu"
+        string no_bak "nullable UK"
+        date date_bak "nullable"
+        string file_bak "nullable"
+        string no_pks "nullable UK"
+        date date_pks "nullable"
+        string file_pks "nullable"
+        date start_date
+        date end_date
+        decimal total_rental_value "15,2 nullable"
+        decimal security_deposit "15,2 nullable"
+        enum sharing_type "revenue_sharing|profit_sharing nullable"
+        decimal company_share_pct "5,2 nullable"
+        decimal tenant_share_pct "5,2 nullable"
+        enum payment_type "upfront|interval|termin"
+        date payment_start_date "nullable"
+        int payment_interval_value "default:1"
+        enum payment_interval_unit "month|year"
+        enum status "draft|active|expired|terminated"
+        string pihak_pertama
+        string pihak_kedua
+        text renewal_notes "nullable"
+        timestamps timestamps
+        timestamp deleted_at "soft delete"
+    }
+
+    CONTRACT_ASSETS {
+        bigint id PK
+        bigint contract_id FK
+        bigint asset_id FK
+        decimal rented_area_sqm "15,2 default:0"
+        timestamps timestamps
+    }
+
+    PAYMENTS {
+        bigint id PK
+        bigint contract_id FK
+        bigint amendment_id "FK nullable"
+        int period_number
+        date due_date
+        date paid_at "nullable"
+        decimal amount_due "15,2"
+        decimal amount_paid "15,2 default:0"
+        enum payment_status "pending|paid|partial|overdue|cancelled"
+        text notes "nullable"
+        timestamps timestamps
+        timestamp deleted_at "soft delete"
+    }
+
+    CONTRACT_WORKFLOWS {
+        bigint id PK
+        bigint contract_id "FK UK"
+        string current_step "default:confirmation_sent"
+        enum branch "A|B nullable"
+        text notes "nullable"
+        timestamp started_at "nullable"
+        timestamp decided_at "nullable"
+        timestamp completed_at "nullable"
+        enum renewal_action "pending|new_contract|amendment nullable"
+        timestamps timestamps
+    }
+
+    WORKFLOW_EVIDENCE {
+        bigint id PK
+        bigint workflow_id FK
+        string step
+        string file_path
+        string original_name
+        timestamp uploaded_at "nullable"
+        timestamps timestamps
+    }
+
+    INVOICES {
+        bigint id PK
+        string invoice_number UK
+        text description
+        decimal amount "15,2"
+        bigint tenant_id "FK nullable"
+        string tenant_name_manual "nullable"
+        date invoice_date "nullable"
+        date payment_date
+        string file_path "nullable"
+        string file_original_name "nullable"
+        text notes "nullable"
+        timestamps timestamps
+        timestamp deleted_at "soft delete"
+    }
+
+    INVOICE_ASSETS {
+        bigint id PK
+        bigint invoice_id FK
+        bigint asset_id FK
+        timestamps timestamps
+    }
+
+    AMENDMENTS {
+        bigint id PK
+        bigint contract_id FK
+        int amendment_number
+        string no_amendment UK
+        date date_amendment
+        date old_start_date
+        date old_end_date
+        date new_start_date
+        date new_end_date
+        decimal total_rental_value "15,2"
+        enum payment_type "upfront|interval|termin"
+        date payment_start_date "nullable"
+        int payment_interval_value "default:1"
+        enum payment_interval_unit "month|year"
+        string no_bak "nullable"
+        date date_bak "nullable"
+        string file_bak "nullable"
+        string no_pks "nullable"
+        date date_pks "nullable"
+        string file_pks "nullable"
+        string pihak_pertama
+        string pihak_kedua
+        text notes "nullable"
+        enum status "draft|active|expired"
+        timestamps timestamps
+    }
+
+    AMENDMENT_ASSETS {
+        bigint id PK
+        bigint amendment_id FK
+        bigint asset_id FK
+        decimal rented_area_sqm "10,2"
+        timestamps timestamps
+    }
+
+    ACTIVITY_LOGS {
+        bigint id PK
+        bigint user_id FK
+        string action
+        string model_type
+        bigint model_id "nullable"
+        text description
+        json properties "nullable"
+        string ip_address "nullable"
+        timestamp created_at
+    }
+
+    ACTUAL_REVENUES {
+        bigint id PK
+        smallint year
+        tinyint month
+        decimal amount "15,2"
+        text notes "nullable"
+        bigint created_by "FK nullable"
+        timestamps timestamps
+    }
 ```
 
 ---
